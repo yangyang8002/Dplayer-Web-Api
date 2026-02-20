@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  dplayer-api:
+    build: .
+    container_name: dplayer-web-api
+    restart: unless-stopped
+    ports:
+      - "1919:1919"
+    environment:
+      - PORT=1919
+      - NODE_ENV=production
+    volumes:
+      # Persist data
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:1919/player/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s

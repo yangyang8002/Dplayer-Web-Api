@@ -7,9 +7,23 @@ const { exec } = require('child_process');
 const app = express();
 const PORT = process.env.PORT || 1919;
 
+// 信任反向代理（支持 Nginx/Caddy 等反代）
+app.set('trust proxy', true);
+
 // 中间件
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// CORS 支持（跨域请求）
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Password');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
 
 // 数据文件路径
 const DATA_DIR = path.join(__dirname, 'data');
