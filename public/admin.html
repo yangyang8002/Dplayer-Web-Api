@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>弹幕管理后台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .login-box {
+            background: rgba(255,255,255,0.1);
+            padding: 40px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-box h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        .login-box input {
+            width: 100%;
+            padding: 14px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 16px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            outline: none;
+        }
+        .login-box input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        .login-box button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #00d9ff, #0099ff);
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .login-box button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 217, 255, 0.4);
+        }
+        .admin-container {
+            display: none;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .header h1 {
+            font-size: 24px;
+        }
+        .header button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            cursor: pointer;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .tab.active {
+            background: linear-gradient(135deg, #00d9ff, #0099ff);
+        }
+        .panel {
+            display: none;
+        }
+        .panel.active {
+            display: block;
+        }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .input-group input {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            outline: none;
+            font-size: 14px;
+        }
+        .input-group button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #00d9ff, #0099ff);
+            color: #fff;
+            cursor: pointer;
+        }
+        .word-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .word-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,100,100,0.2);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .word-item .delete-btn {
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        th {
+            background: rgba(255,255,255,0.05);
+            font-weight: 500;
+        }
+        .danmu-text {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .delete-btn-row {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            background: rgba(255,100,100,0.2);
+            color: #ff6b6b;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            background: #4caf50;
+            color: #fff;
+            transform: translateX(200%);
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+        .toast.error {
+            background: #ff6b6b;
+        }
+        .toast.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <h1>弹幕管理后台</h1>
+            <input type="password" id="passwordInput" placeholder="请输入管理员密码">
+            <button onclick="login()">登录</button>
+        </div>
+    </div>
+
+    <div class="admin-container" id="adminContainer">
+        <div class="header">
+            <h1>弹幕管理后台</h1>
+            <button onclick="logout()">退出登录</button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('banned')">屏蔽词管理</button>
+            <button class="tab" onclick="switchTab('danmu')">弹幕列表</button>
+        </div>
+
+        <div class="panel active" id="bannedPanel">
+            <div class="card">
+                <h2>添加屏蔽词</h2>
+                <div class="input-group">
+                    <input type="text" id="newWordInput" placeholder="输入要屏蔽的关键词">
+                    <button onclick="addBannedWord()">添加</button>
+                </div>
+            </div>
+            <div class="card">
+                <h2>当前屏蔽词列表</h2>
+                <div class="word-list" id="wordList"></div>
+            </div>
+        </div>
+
+        <div class="panel" id="danmuPanel">
+            <div class="card">
+                <h2>弹幕记录</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>时间</th>
+                            <th>视频ID</th>
+                            <th>弹幕内容</th>
+                            <th>颜色</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="danmuTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        let adminPassword = '';
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast' + (isError ? ' error' : '');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function login() {
+            adminPassword = document.getElementById('passwordInput').value;
+            if (!adminPassword) {
+                showToast('请输入密码', true);
+                return;
+            }
+
+            fetch('/api/admin/banned-words', {
+                headers: { 'X-Admin-Password': adminPassword }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 0) {
+                    document.getElementById('loginContainer').style.display = 'none';
+                    document.getElementById('adminContainer').style.display = 'block';
+                    loadBannedWords();
+                    loadDanmuList();
+                } else {
+                    showToast('密码错误', true);
+                }
+            })
+            .catch(() => showToast('登录失败', true));
+        }
+
+        function logout() {
+            adminPassword = '';
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('adminContainer').style.display = 'none';
+            document.getElementById('passwordInput').value = '';
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            
+            if (tab === 'banned') {
+                document.querySelector('.tab:nth-child(1)').classList.add('active');
+                document.getElementById('bannedPanel').classList.add('active');
+            } else {
+                document.querySelector('.tab:nth-child(2)').classList.add('active');
+                document.getElementById('danmuPanel').classList.add('active');
+            }
+        }
+
+        function loadBannedWords() {
+            fetch('/api/admin/banned-words', {
+                headers: { 'X-Admin-Password': adminPassword }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 0) {
+                    renderWordList(data.data);
+                }
+            });
+        }
+
+        function renderWordList(words) {
+            const container = document.getElementById('wordList');
+            container.innerHTML = words.map(word => `
+                <div class="word-item">
+                    <span>${escapeHtml(word)}</span>
+                    <button class="delete-btn" onclick="deleteBannedWord('${escapeHtml(word)}')">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function addBannedWord() {
+            const word = document.getElementById('newWordInput').value.trim();
+            if (!word) {
+                showToast('请输入关键词', true);
+                return;
+            }
+
+            fetch('/api/admin/banned-words', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Admin-Password': adminPassword
+                },
+                body: JSON.stringify({ word, password: adminPassword })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 0) {
+                    showToast('添加成功');
+                    document.getElementById('newWordInput').value = '';
+                    renderWordList(data.data);
+                } else {
+                    showToast(data.msg, true);
+                }
+            });
+        }
+
+        function deleteBannedWord(word) {
+            fetch('/api/admin/banned-words', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Admin-Password': adminPassword
+                },
+                body: JSON.stringify({ word, password: adminPassword })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 0) {
+                    showToast('删除成功');
+                    renderWordList(data.data);
+                }
+            });
+        }
+
+        function loadDanmuList() {
+            fetch('/api/admin/danmu', {
+                headers: { 'X-Admin-Password': adminPassword }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 0) {
+                    renderDanmuTable(data.data);
+                }
+            });
+        }
+
+        function renderDanmuTable(danmuList) {
+            const tbody = document.getElementById('danmuTable');
+            tbody.innerHTML = danmuList.map(d => `
+                <tr>
+                    <td>${new Date(d.date).toLocaleString()}</td>
+                    <td>${escapeHtml(d.vid || '-')}</td>
+                    <td class="danmu-text" style="color:${d.color}">${escapeHtml(d.text)}</td>
+                    <td>${d.color}</td>
+                    <td>
+                        <button class="delete-btn-row" onclick="deleteDanmu('${d.id}')">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteDanmu(id) {
+            fetch('/api/admin/danmu', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Admin-Password': adminPassword
+                },
+                body: JSON.stringify({ id, password: adminPassword })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 0) {
+                    showToast('删除成功');
+                    loadDanmuList();
+                }
+            });
+        }
+
+        // 回车登录
+        document.getElementById('passwordInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') login();
+        });
+
+        // 回车添加关键词
+        document.getElementById('newWordInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') addBannedWord();
+        });
+    </script>
+</body>
+</html>

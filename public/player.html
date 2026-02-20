@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DPlayer播放器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            overflow: hidden;
+        }
+        #dplayer {
+            width: 100%;
+            height: 100%;
+        }
+        .error-msg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff6b6b;
+            font-size: 18px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            text-align: center;
+            display: none;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.css">
+</head>
+<body>
+    <div id="dplayer"></div>
+    <div class="error-msg" id="errorMsg"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js/dist/hls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flv.js/dist/flv.min.js"></script>
+
+    <script>
+        let dp = null;
+
+        function getUrlParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // 根据URL生成视频ID（用于弹幕分组）
+        function getVideoId(url) {
+            let vid = url;
+            try {
+                const urlObj = new URL(url);
+                vid = urlObj.pathname + urlObj.search;
+            } catch (e) {
+                // 如果不是完整URL，直接使用
+            }
+            // 简单hash
+            let hash = 0;
+            for (let i = 0; i < vid.length; i++) {
+                const char = vid.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash).toString(36);
+        }
+
+        function getVideoType(url) {
+            const urlLower = url.toLowerCase();
+            if (urlLower.includes('.m3u8') || urlLower.includes('m3u8')) {
+                return 'hls';
+            } else if (urlLower.includes('.flv') || urlLower.includes('flv')) {
+                return 'flv';
+            }
+            return 'normal';
+        }
+
+        function showError(msg) {
+            const errorEl = document.getElementById('errorMsg');
+            errorEl.textContent = msg;
+            errorEl.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorMsg').style.display = 'none';
+        }
+
+        async function initPlayer(url) {
+            if (!url) {
+                showError('请提供视频地址，格式：/player/?url=视频链接');
+                return;
+            }
+
+            const videoUrl = decodeURIComponent(url);
+            const videoType = getVideoType(videoUrl);
+            const vid = getVideoId(videoUrl);
+
+            const options = {
+                container: document.getElementById('dplayer'),
+                autoplay: true,
+                theme: '#00d9ff',
+                loop: false,
+                lang: 'zh-cn',
+                screenshot: true,
+                hotkey: true,
+                preload: 'auto',
+                volume: 0.7,
+                video: {
+                    url: videoUrl
+                },
+                danmaku: {
+                    id: vid,
+                    user: 'user_' + Math.random().toString(36).substr(2, 6),
+                    api: '/api/danmu/',
+                    bottom: '10%',
+                    unlimited: false
+                }
+            };
+
+            if (videoType === 'hls') {
+                options.video.type = 'hls';
+            } else if (videoType === 'flv') {
+                options.video.type = 'flv';
+            }
+
+            if (dp) {
+                dp.destroy();
+            }
+
+            try {
+                dp = new DPlayer(options);
+                hideError();
+            } catch (e) {
+                showError('播放器初始化失败: ' + e.message);
+            }
+        }
+
+        window.onload = function() {
+            const videoUrl = getUrlParam('url');
+            initPlayer(videoUrl);
+        };
+    </script>
+</body>
+</html>
