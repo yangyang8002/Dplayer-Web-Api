@@ -2,6 +2,8 @@
 
 一个基于 Node.js + Express + DPlayer 的弹幕视频播放系统，支持多种视频格式、弹幕发送与管理、敏感词过滤等功能。
 
+**仓库地址：** https://github.com/yangyang8002/Dplayer-Web-Api
+
 ## 功能介绍
 
 ### 🎬 视频播放器
@@ -29,7 +31,7 @@
 ## 项目结构
 
 ```
-pl/
+Dplayer-Web-Api/
 ├── server.js           # 服务端主文件
 ├── package.json        # 项目依赖配置
 ├── data/
@@ -42,34 +44,38 @@ pl/
 
 ## 部署步骤
 
-### 1. 环境要求
+### 方式一：从 GitHub 克隆
+
+```bash
+git clone https://github.com/yangyang8002/Dplayer-Web-Api.git
+cd Dplayer-Web-Api
+npm install
+npm start
+```
+
+### 方式二：直接下载
+
+从 [Releases](https://github.com/yangyang8002/Dplayer-Web-Api/releases) 下载最新版本，解压后执行：
+
+```bash
+npm install
+npm start
+```
+
+### 环境要求
+
 - Node.js >= 14.x
 - npm 或 yarn
 - Git（用于敏感词库自动更新）
 
-### 2. 安装依赖
-
-```bash
-cd pl
-npm install
-```
-
-### 3. 启动服务
-
-```bash
-npm start
-```
-
-服务默认运行在 `http://localhost:1919`
-
-### 4. 访问页面
+### 访问地址
 
 | 页面 | 地址 |
 |------|------|
 | 播放器 | `http://localhost:1919/player/?url=视频地址` |
 | 管理后台 | `http://localhost:1919/admin/` |
 
-### 5. 管理员密码
+### 管理员密码
 
 默认管理员密码：`admin123`
 
@@ -138,4 +144,4 @@ PORT=8080 npm start
 
 ## License
 
-ISC
+MIT
