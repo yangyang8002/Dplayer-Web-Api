@@ -50,7 +50,7 @@
             return urlParams.get(name);
         }
 
-        // 根据URL生成视频ID（用于弹幕分组）
+        // 根据URL生成稳定的视频ID（用于弹幕分组）
         function getVideoId(url) {
             let vid = url;
             try {
@@ -59,7 +59,7 @@
             } catch (e) {
                 // 如果不是完整URL，直接使用
             }
-            // 简单hash
+            // 简单hash（与原版保持一致）
             let hash = 0;
             for (let i = 0; i < vid.length; i++) {
                 const char = vid.charCodeAt(i);
@@ -97,7 +97,14 @@
 
             const videoUrl = decodeURIComponent(url);
             const videoType = getVideoType(videoUrl);
-            const vid = getVideoId(videoUrl);
+            
+            // 支持手动指定视频 ID（用于测试），否则自动生成
+            const manualVid = getUrlParam('vid');
+            const vid = manualVid || getVideoId(videoUrl);
+
+            console.log('[播放器] 初始化 - 视频URL:', videoUrl);
+            console.log('[播放器] 视频类型:', videoType);
+            console.log('[播放器] 视频ID:', vid);
 
             const options = {
                 container: document.getElementById('dplayer'),
@@ -134,8 +141,16 @@
             try {
                 dp = new DPlayer(options);
                 hideError();
+                
+                console.log('[播放器] 弹幕配置:', options.danmaku);
+                
+                // 监听弹幕事件
+                dp.on('danmaku_loaded', function() {
+                    console.log('[弹幕] 弹幕加载完成');
+                });
             } catch (e) {
                 showError('播放器初始化失败: ' + e.message);
+                console.error('[播放器] 初始化错误:', e);
             }
         }
 

@@ -69,14 +69,18 @@ function containsBannedWord(text) {
 
 // ==================== 弹幕API ====================
 
-// 获取弹幕列表（按视频ID）- DPlayer v3标准格式
-// DPlayer请求格式: /api/danmu/v3/?id=xxx
-app.get(/^\/api\/danmu\/v3\/?$/, (req, res) => {
-    const { id } = req.query;
+// 获取弹幕列表 - DPlayer v3标准格式
+// 路由1: /api/danmu/v3/?id=xxx (DPlayer 实际使用的格式)
+app.get('/api/danmu/v3/', (req, res) => {
+    const id = req.query.id;
+    console.log(`[弹幕API] GET 请求(query) - 视频ID: ${id}`);
+    
     let danmuList = readData(DANMU_FILE);
+    console.log(`[弹幕API] 数据库中共有 ${danmuList.length} 条弹幕`);
     
     if (id) {
         danmuList = danmuList.filter(d => d.vid === id);
+        console.log(`[弹幕API] 过滤后剩余 ${danmuList.length} 条弹幕`);
     }
     
     // 过滤掉包含屏蔽词的弹幕
@@ -95,20 +99,87 @@ app.get(/^\/api\/danmu\/v3\/?$/, (req, res) => {
         text: d.text
     }));
     
+    console.log(`[弹幕API] 返回 ${danmakuData.length} 条弹幕`);
     res.json({ code: 0, data: danmakuData });
 });
 
-// 发送弹幕 - DPlayer v3标准格式
-// DPlayer POST格式: /api/danmu/v3/  body: { id, author, time, text, color, type }
-app.post(/^\/api\/danmu\/v3\/?$/, (req, res) => {
+// 路由2: /api/danmu/v3/xxx (路径参数格式)
+app.get('/api/danmu/v3/:id', (req, res) => {
+    const id = req.params.id;
+    console.log(`[弹幕API] GET 请求(path) - 视频ID: ${id}`);
+    
+    let danmuList = readData(DANMU_FILE);
+    
+    if (id) {
+        danmuList = danmuList.filter(d => d.vid === id);
+    }
+    
+    // 过滤屏蔽词
+    const bannedWords = readData(BANNED_WORDS_FILE);
+    danmuList = danmuList.filter(d => {
+        const text = d.text.toLowerCase();
+        return !bannedWords.some(word => text.includes(word.toLowerCase()));
+    });
+    
+    const danmakuData = danmuList.map(d => ({
+        time: d.time,
+        type: d.type === 'right' ? 0 : (d.type === 'top' ? 1 : 2),
+        color: parseInt(d.color.replace('#', ''), 16),
+        author: d.author || 'anonymous',
+        text: d.text
+    }));
+    
+    res.json({ code: 0, data: danmakuData });
+});
+
+// DPlayer标准弹幕API路由 (兼容旧版DPlayer配置)
+// 获取弹幕: GET /api/danmu/?id=xxx
+app.get('/api/danmu/', (req, res) => {
+    const id = req.query.id;
+    console.log(`[弹幕API] GET 请求(query) - 视频ID: ${id}`);
+    
+    let danmuList = readData(DANMU_FILE);
+    console.log(`[弹幕API] 数据库中共有 ${danmuList.length} 条弹幕`);
+    
+    if (id) {
+        danmuList = danmuList.filter(d => d.vid === id);
+        console.log(`[弹幕API] 过滤后剩余 ${danmuList.length} 条弹幕`);
+    }
+    
+    // 过滤掉包含屏蔽词的弹幕
+    const bannedWords = readData(BANNED_WORDS_FILE);
+    danmuList = danmuList.filter(d => {
+        const text = d.text.toLowerCase();
+        return !bannedWords.some(word => text.includes(word.toLowerCase()));
+    });
+    
+    // 转换为DPlayer标准格式
+    const danmakuData = danmuList.map(d => ({
+        time: d.time,
+        type: d.type === 'right' ? 0 : (d.type === 'top' ? 1 : 2),
+        color: parseInt(d.color.replace('#', ''), 16),
+        author: d.author || 'anonymous',
+        text: d.text
+    }));
+    
+    console.log(`[弹幕API] 返回 ${danmakuData.length} 条弹幕`);
+    res.json({ code: 0, data: danmakuData });
+});
+
+// 发送弹幕 - DPlayer标准格式
+// DPlayer POST格式: POST /api/danmu/  body: { id, author, time, text, color, type }
+app.post('/api/danmu/', (req, res) => {
     const { id, text, color, type, time, author } = req.body;
+    console.log(`[弹幕API] POST 请求 - 视频ID: ${id}, 内容: ${text}`);
     
     if (!id || !text) {
+        console.log(`[弹幕API] 参数不完整 - id: ${id}, text: ${text}`);
         return res.status(400).json({ code: 1, msg: '参数不完整' });
     }
     
     // 检查屏蔽词
     if (containsBannedWord(text)) {
+        console.log(`[弹幕API] 弹幕包含屏蔽词: ${text}`);
         return res.status(403).json({ code: 2, msg: '弹幕包含屏蔽词' });
     }
     
@@ -139,6 +210,55 @@ app.post(/^\/api\/danmu\/v3\/?$/, (req, res) => {
     danmuList.push(newDanmu);
     writeData(DANMU_FILE, danmuList);
     
+    console.log(`[弹幕API] 弹幕保存成功: ${text}`);
+    res.json({ code: 0, data: newDanmu });
+});
+
+// 发送弹幕 - DPlayer v3标准格式
+// DPlayer POST格式: POST /api/danmu/v3/  body: { id, author, time, text, color, type }
+app.post('/api/danmu/v3/', (req, res) => {
+    const { id, text, color, type, time, author } = req.body;
+    console.log(`[弹幕API] POST 请求 - 视频ID: ${id}, 内容: ${text}`);
+    
+    if (!id || !text) {
+        console.log(`[弹幕API] 参数不完整 - id: ${id}, text: ${text}`);
+        return res.status(400).json({ code: 1, msg: '参数不完整' });
+    }
+    
+    // 检查屏蔽词
+    if (containsBannedWord(text)) {
+        console.log(`[弹幕API] 弹幕包含屏蔽词: ${text}`);
+        return res.status(403).json({ code: 2, msg: '弹幕包含屏蔽词' });
+    }
+    
+    const danmuList = readData(DANMU_FILE);
+    
+    // 转换type: DPlayer格式 0=right, 1=top, 2=bottom
+    let danmuType = 'right';
+    if (type === 1) danmuType = 'top';
+    else if (type === 2) danmuType = 'bottom';
+    
+    // 转换color: 数字转hex
+    let colorHex = '#ffffff';
+    if (color !== undefined) {
+        colorHex = '#' + parseInt(color).toString(16).padStart(6, '0');
+    }
+    
+    const newDanmu = {
+        id: Date.now().toString(),
+        vid: id,
+        text,
+        color: colorHex,
+        type: danmuType,
+        time: parseFloat(time) || 0,
+        author: author || 'anonymous',
+        date: new Date().toISOString()
+    };
+    
+    danmuList.push(newDanmu);
+    writeData(DANMU_FILE, danmuList);
+    
+    console.log(`[弹幕API] 弹幕保存成功: ${text}`);
     res.json({ code: 0, data: newDanmu });
 });
 
