@@ -409,7 +409,7 @@
         /* 自定义弹幕输入框（bilibili 风格） */
         .bili-danmu {
             position: absolute;
-            right: 218px;
+            right: 238px;
             bottom: 0;
             height: 100%;
             display: flex;
@@ -582,7 +582,8 @@
         }
 
         /* 隐藏 DPlayer 自带弹幕按钮（用自定义开关替代） */
-        .dplayer-icons-right .dplayer-comment { display: none; }
+        .dplayer-icons-right .dplayer-comment,
+        .dplayer-icons-right .dplayer-comment-icon { display: none !important; }
 
         /* 隐藏控制栏截图按钮，改用右侧悬浮按钮 */
         .dplayer-camera-icon { display: none !important; }
@@ -756,10 +757,66 @@
         /* 移动端 */
         @media (max-width: 640px) {
             .bili-title { top: clamp(8px, 2.6vw, 10px); left: clamp(10px, 3.2vw, 12px); }
-            .bili-danmu { right: 152px; }
+            .bili-danmu { right: 172px; }
+            .bili-overflow-panel { right: 8px; }
             .dplayer-controller { padding: 0 8px; }
             .dplayer-bar-wrap { width: calc(100% - 16px); }
         }
+
+        /* 溢出菜单按钮（控件重叠时出现） */
+        .dplayer-controller .dplayer-icons .dplayer-icon.bili-overflow-btn { display: none; }
+        .dplayer-controller .dplayer-icons .dplayer-icon.bili-overflow-btn.show { display: inline-flex; }
+
+        .bili-overflow-panel {
+            position: absolute;
+            right: clamp(8px, 3vw, 12px);
+            bottom: calc(var(--ctrl-h) + env(safe-area-inset-bottom, 0px) + 6px);
+            background: rgba(20, 20, 24, .94);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 10px;
+            display: none;
+            flex-direction: column;
+            padding: 4px;
+            z-index: 30;
+            min-width: 130px;
+        }
+        .bili-overflow-panel.open { display: flex; }
+
+        .bili-overflow-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: rgba(255, 255, 255, .9);
+            font-size: 12.5px;
+            transition: background .2s;
+            border: none;
+            background: none;
+            white-space: nowrap;
+            font-family: 'MiSans', 'Microsoft YaHei', sans-serif;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: left;
+        }
+        .bili-overflow-item:hover { background: rgba(255, 255, 255, .06); }
+        .bili-overflow-item .item-icon {
+            width: 16px; height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: rgba(255, 255, 255, .8);
+        }
+        .bili-overflow-item .item-icon svg {
+            fill: none; stroke: currentColor;
+            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+            width: 16px; height: 16px;
+        }
+        .bili-overflow-item .item-label { flex: 1; }
     </style>
 </head>
 <body>
@@ -788,8 +845,8 @@
     <div id="toast"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js/dist/hls.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flv.js/dist/flv.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flv.js@1.6.2/dist/flv.min.js"></script>
 
     <script>
         let dp = null;
@@ -944,6 +1001,7 @@
                 setupCommentBox();
                 applyDanmakuMask(danmakuMask);
                 injectDanmakuToggle();
+                injectOverflowSystem();
                 injectScreenshotButton();
                 addStatsItem();
                 addMaskSetting();
@@ -953,6 +1011,7 @@
                 let videoOk = false;
                 const video = document.querySelector('#dplayer video');
                 if (video) {
+                    video.addEventListener('durationchange', refreshOverflowIcons);
                     video.addEventListener('loadeddata', () => { videoOk = true; });
                     video.addEventListener('playing', () => { videoOk = true; });
                     video.addEventListener('error', (e) => {
@@ -972,6 +1031,7 @@
         }
 
         let danmakuVisible = true;
+        let _overflowSystem = null;
         let danmakuMask = parseInt(localStorage.getItem('dp_danmu_mask') || '0') || 0;
         let currentTheme = localStorage.getItem('dp_theme') || 'bilibili';
 
@@ -1021,7 +1081,8 @@
             fullWeb: () => lucide('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),
             send: () => lucide('<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/>', { filled: true }),
             palette: () => lucide('<path d="M12 22a10 10 0 1 1 10-10c0 2.5-2 3-3.5 3H16a3 3 0 0 0-2 5c.5.6.3 1.3-.3 1.7-.5.3-1.1.5-1.7.6v-.3z"/><circle cx="7.5" cy="10.5" r="1.3"/><circle cx="11" cy="7.5" r="1.3"/><circle cx="15.5" cy="9.5" r="1.3"/>', { filled: true }),
-            right: () => lucide('<path d="m9 18 6-6-6-6"/>')
+            right: () => lucide('<path d="m9 18 6-6-6-6"/>'),
+            more: () => lucide('<circle cx="6" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="18" cy="12" r="1.5"/>')
         };
 
         function setIcon(selector, iconSvg) {
@@ -1044,6 +1105,7 @@
             document.querySelectorAll('.dplayer-setting-item .dplayer-toggle').forEach(t => {
                 if (!t.querySelector('input')) t.innerHTML = ICONS.right();
             });
+            refreshOverflowIcons();
         }
 
         function bindIconEvents() {
@@ -1212,6 +1274,194 @@
             });
 
             right.insertBefore(btn, right.firstChild);
+        }
+
+        /* ===== 溢出菜单系统（控件重叠时收拢到更多按钮） ===== */
+        function refreshOverflowIcons() {
+            if (!_overflowSystem) return;
+            checkOverflow(_overflowSystem);
+        }
+
+        /* 弹幕输入框动态定位：紧贴右侧栏左侧（间距 10px），避免与关闭弹幕等右侧按钮重叠 */
+        function layoutDanmuBox(controller) {
+            const danmuEl = controller.querySelector('.bili-danmu');
+            const rightBar = controller.querySelector('.dplayer-icons-right');
+            if (!danmuEl || !rightBar) return;
+            const els = [...rightBar.children].filter(c => c.offsetWidth > 0 && c.offsetHeight > 0);
+            if (!els.length) return;
+            const right = Math.round(controller.getBoundingClientRect().right - els[0].getBoundingClientRect().left + 10);
+            danmuEl.style.right = Math.max(10, right) + 'px';
+        }
+
+        function checkOverflow(sys) {
+            if (!sys || !dp) return;
+            const { overflowBtn, popup, controller } = sys;
+
+            const rightManaged = [
+                { el: controller.querySelector('.dplayer-full-in-icon') || controller.querySelector('.dplayer-full-icon'), label: '全屏' },
+                { el: controller.querySelector('.dplayer-setting-icon'), label: '设置' },
+                { el: controller.querySelector('.dplayer-comment-setting-icon'), label: '弹幕样式' },
+                { el: controller.querySelector('.bili-danmaku-toggle'), label: '弹幕开关' }
+            ].filter(m => m.el);
+
+            const leftManaged = [
+                { el: controller.querySelector('.dplayer-volume'), label: '音量' },
+                { el: controller.querySelector('.dplayer-play-icon'), label: dp.video && dp.video.paused ? '播放' : '暂停' }
+            ].filter(m => m.el);
+
+            // 弹幕输入框（颜色按钮 + 输入框 + 发送按钮）视为同一个键
+            const danmuEl = controller.querySelector('.bili-danmu');
+            const danmuManaged = danmuEl ? [{ el: danmuEl, label: '发送弹幕', icon: ICONS.comment() }] : [];
+
+            [...rightManaged, ...danmuManaged, ...leftManaged].forEach(m => {
+                m.el.style.display = ''; m.el.classList.remove('bili-overflow-hidden');
+            });
+
+            layoutDanmuBox(controller);
+
+            const controllerRect = controller.getBoundingClientRect();
+            const hidden = [];
+            const isVisible = el => el.offsetWidth > 0 && el.offsetHeight > 0;
+            const r = el => el.getBoundingClientRect();
+
+            // 1) 弹幕输入框（一个键）仅在与受保护控件真正重叠时整体收拢：
+            //    暂停/播放、音量、进度显示、全屏、设置、弹幕样式
+            //    （输入框聚焦时暂不收拢，避免打字中途消失）
+            const danmuFocused = !!danmuEl && danmuEl.contains(document.activeElement) &&
+                document.activeElement.tagName === 'INPUT';
+            if (danmuEl && isVisible(danmuEl) && !danmuFocused) {
+                const dm = r(danmuEl);
+                const protectedEls = [
+                    controller.querySelector('.dplayer-play-icon'),
+                    controller.querySelector('.dplayer-volume'),
+                    controller.querySelector('.dplayer-time'),
+                    controller.querySelector('.dplayer-setting'),
+                    controller.querySelector('.dplayer-full') || controller.querySelector('.dplayer-full-in-icon'),
+                    controller.querySelector('.dplayer-comment-setting-icon')
+                ].filter(el => el && isVisible(el));
+                const clash = protectedEls.some(el => {
+                    const er = r(el);
+                    const ov = Math.min(er.right, dm.right) - Math.max(er.left, dm.left);
+                    return ov >= 12;
+                });
+                if (clash) hidden.push(danmuManaged[0]);
+            }
+            if (danmuEl && hidden.includes(danmuManaged[0])) {
+                danmuEl.style.display = 'none';
+                danmuEl.classList.add('bili-overflow-hidden');
+            }
+
+            // 2) 右侧按钮：超出容器右缘则从右向左逐个收拢
+            rightManaged.forEach(m => {
+                if (hidden.includes(m)) return;
+                if (!isVisible(m.el)) return;
+                if (r(m.el).right > controllerRect.right - 2) {
+                    hidden.push(m);
+                    m.el.style.display = 'none';
+                    m.el.classList.add('bili-overflow-hidden');
+                }
+            });
+
+            // 3) 左右两侧仍相撞时，收拢左侧按钮（音量 → 播放/暂停）
+            const rightBar = controller.querySelector('.dplayer-icons-right');
+            leftManaged.forEach(m => {
+                if (hidden.includes(m)) return;
+                if (!isVisible(m.el)) return;
+                if (!rightBar) return;
+                const els = [...rightBar.children].filter(c => isVisible(c) && !c.classList.contains('bili-overflow-btn'));
+                if (els.length && r(m.el).right > r(els[0]).left + 2) {
+                    hidden.push(m);
+                    m.el.style.display = 'none';
+                    m.el.classList.add('bili-overflow-hidden');
+                }
+            });
+
+            popup.innerHTML = '';
+
+            if (hidden.length > 0) {
+                overflowBtn.classList.add('show');
+
+                hidden.forEach(m => {
+                    const item = document.createElement('button');
+                    item.className = 'bili-overflow-item';
+
+                    const iconEl = m.el.querySelector('.dplayer-icon-content');
+                    const icon = m.icon || (iconEl ? iconEl.innerHTML : '');
+
+                    const iconWrap = document.createElement('span');
+                    iconWrap.className = 'item-icon';
+                    iconWrap.innerHTML = icon;
+
+                    const label = document.createElement('span');
+                    label.className = 'item-label';
+                    label.textContent = m.label;
+
+                    item.appendChild(iconWrap);
+                    item.appendChild(label);
+
+                    item.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (m.el.classList.contains('bili-danmu')) {
+                            m.el.style.display = '';
+                            m.el.classList.remove('bili-overflow-hidden');
+                            layoutDanmuBox(controller);
+                            item.remove();
+                            if (!popup.children.length) overflowBtn.classList.remove('show');
+                            const input = m.el.querySelector('.bd-input');
+                            if (input) {
+                                input.focus();
+                                input.addEventListener('blur', () => {
+                                    checkOverflow(_overflowSystem);
+                                }, { once: true });
+                            }
+                        } else {
+                            const target = m.el.querySelector('.dplayer-volume-icon') || m.el;
+                            target.click();
+                        }
+                        popup.classList.remove('open');
+                    });
+                    popup.appendChild(item);
+                });
+            } else {
+                overflowBtn.classList.remove('show');
+                popup.classList.remove('open');
+            }
+        }
+
+        function injectOverflowSystem() {
+            const controller = document.querySelector('.dplayer-controller');
+            const rightBar = controller ? controller.querySelector('.dplayer-icons-right') : null;
+            if (!rightBar || document.querySelector('.bili-overflow-btn')) return;
+
+            const overflowBtn = document.createElement('button');
+            overflowBtn.className = 'dplayer-icon bili-overflow-btn';
+            overflowBtn.title = '更多选项';
+            overflowBtn.innerHTML = '<span class="dplayer-icon-content">' + ICONS.more() + '</span>';
+
+            const popup = document.createElement('div');
+            popup.className = 'bili-overflow-panel';
+            controller.appendChild(popup);
+
+            rightBar.appendChild(overflowBtn);
+
+            overflowBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                popup.classList.toggle('open');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!popup.contains(e.target) && e.target !== overflowBtn) {
+                    popup.classList.remove('open');
+                }
+            });
+
+            const ro = new ResizeObserver(() => {
+                checkOverflow(_overflowSystem);
+            });
+            ro.observe(controller);
+
+            _overflowSystem = { overflowBtn, popup, controller };
+            checkOverflow(_overflowSystem);
         }
 
         /* ===== 统计信息面板 ===== */
