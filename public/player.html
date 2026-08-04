@@ -3,40 +3,789 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DPlayer播放器</title>
+    <title>DPlayer - 弹幕视频播放器</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Regular.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Medium.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Semibold.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Bold.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root, [data-theme="bilibili"] {
+            --bg: #07070d;
+            --surface: #14141f;
+            --border: rgba(255, 255, 255, 0.07);
+            --bili-blue: #00a1d6;
+            --bili-blue-hover: #00b3e6;
+            --bili-pink: #fb7299;
+            --text: #e6e6ee;
+            --text-dim: #9099a3;
+            --danger: #ff4d6a;
+            --radius: 12px;
+            --gradient: linear-gradient(135deg, var(--bili-blue), var(--bili-pink));
         }
+        [data-theme="sakura"] {
+            --bg: #1a1218;
+            --surface: #261c24;
+            --border: rgba(251,114,153,0.12);
+            --bili-blue: #ff85a2;
+            --bili-blue-hover: #ff9db5;
+            --bili-pink: #c792ea;
+            --text: #f5e6ed;
+            --text-dim: #b89aaa;
+            --danger: #ff6188;
+            --radius: 12px;
+            --gradient: linear-gradient(135deg, #ff85a2, #c792ea);
+        }
+        [data-theme="ocean"] {
+            --bg: #0a1628;
+            --surface: #101e36;
+            --border: rgba(0,212,255,0.12);
+            --bili-blue: #00d4ff;
+            --bili-blue-hover: #33dfff;
+            --bili-pink: #5ce6c6;
+            --text: #d4edf4;
+            --text-dim: #6b9bb0;
+            --danger: #ff5370;
+            --radius: 12px;
+            --gradient: linear-gradient(135deg, #00d4ff, #5ce6c6);
+        }
+        [data-theme="sunset"] {
+            --bg: #1a1018;
+            --surface: #2a1826;
+            --border: rgba(255,165,0,0.15);
+            --bili-blue: #ff8c42;
+            --bili-blue-hover: #ffa564;
+            --bili-pink: #e06c9f;
+            --text: #f0e0d6;
+            --text-dim: #b09580;
+            --danger: #f44;
+            --radius: 12px;
+            --gradient: linear-gradient(135deg, #ff8c42, #e06c9f);
+        }
+        [data-theme="forest"] {
+            --bg: #0d120b;
+            --surface: #182114;
+            --border: rgba(100,221,23,0.12);
+            --bili-blue: #64dd17;
+            --bili-blue-hover: #76ff03;
+            --bili-pink: #69f0ae;
+            --text: #d8e8d0;
+            --text-dim: #7a9a6a;
+            --danger: #ff5252;
+            --radius: 12px;
+            --gradient: linear-gradient(135deg, #64dd17, #69f0ae);
+        }
+        [data-theme="mono"] {
+            --bg: #060606;
+            --surface: #141414;
+            --border: rgba(255,255,255,0.08);
+            --bili-blue: #888;
+            --bili-blue-hover: #aaa;
+            --bili-pink: #ddd;
+            --text: #e8e8e8;
+            --text-dim: #777;
+            --danger: #ccc;
+            --radius: 12px;
+            --gradient: linear-gradient(135deg, #666, #ccc);
+        }
+        :root {
+            /* 响应式尺寸（随视口按比例缩放） */
+            --ctrl-h: clamp(36px, min(11vw, 9vh), 42px);
+            --icon-btn: clamp(22px, min(6.8vw, 6vh), 30px);
+            --icon-svg: clamp(14px, min(4.4vw, 3.8vh), 20px);
+            --danmu-w: clamp(84px, 30vw, 180px);
+            --danmu-h: clamp(22px, min(7.2vw, 6vh), 28px);
+            --title-fs: clamp(11px, min(3.3vw, 2.8vh), 13px);
+            --time-fs: clamp(10px, min(3vw, 2.6vh), 12px);
+            --shot: clamp(32px, min(10vw, 9vh), 40px);
+            --dm-font: clamp(15px, min(5vw, 4vh), 20px);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         html, body {
-            width: 100%;
-            height: 100%;
-            background: #000;
+            width: 100%; height: 100%;
+            height: 100dvh;
+            background: var(--bg);
+            font-family: 'MiSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif;
             overflow: hidden;
         }
+
+        #app {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+
+        #player-wrapper {
+            flex: 1;
+            position: relative;
+            background: #000;
+            min-height: 0;
+        }
+
         #dplayer {
             width: 100%;
             height: 100%;
         }
-        .error-msg {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #ff6b6b;
-            font-size: 18px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+        #overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #overlay.active { pointer-events: all; }
+
+        .overlay-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: clamp(24px, 6vw, 40px) clamp(18px, 5vw, 36px);
             text-align: center;
+            max-width: 460px;
+            width: 90%;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .overlay-card .icon {
+            width: clamp(48px, 15vw, 64px);
+            height: clamp(48px, 15vw, 64px);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto clamp(12px, 5vw, 20px);
+            font-size: clamp(20px, 7vw, 26px);
+        }
+
+        .overlay-card .icon.error { background: rgba(255, 77, 106, 0.15); color: var(--danger); }
+        .overlay-card .icon.loading {
+            background: linear-gradient(135deg, var(--bili-blue), var(--bili-pink));
+            color: #fff;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .overlay-card h2 {
+            color: #fff;
+            font-size: clamp(17px, 5vw, 20px);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .overlay-card p {
+            color: var(--text-dim);
+            font-size: clamp(12.5px, 3.6vw, 14px);
+            line-height: 1.6;
+        }
+
+        .overlay-card .code { font-family: 'Fira Code', 'Cascadia Code', monospace; color: var(--bili-blue); font-size: 13px; word-break: break-all; }
+
+        .overlay-card input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: border-color .2s;
+            margin-top: 16px;
+        }
+        .overlay-card input:focus { border-color: var(--bili-blue); }
+        .overlay-card input::placeholder { color: #555; }
+
+        .overlay-card button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--bili-blue), var(--bili-pink));
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: transform .15s, box-shadow .15s;
+        }
+        .overlay-card button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(0, 161, 214, 0.3);
+        }
+
+        #toast {
+            position: fixed;
+            top: clamp(12px, 4vw, 20px); left: 50%;
+            transform: translateX(-50%) translateY(-120px);
+            padding: clamp(10px, 3vw, 12px) clamp(20px, 7vw, 28px);
+            border-radius: 24px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: #fff;
+            font-size: clamp(11px, 3.4vw, 13px);
+            backdrop-filter: blur(12px);
+            z-index: 999;
+            transition: transform .35s cubic-bezier(.4, 0, .2, 1);
+            pointer-events: none;
+        }
+        #toast.show { transform: translateX(-50%) translateY(0); }
+
+        .hidden { display: none !important; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .75; transform: scale(.96); }
+        }
+
+        /* ============ bilibili 精致版 DPlayer 覆盖 ============ */
+
+        /* 图标体系（Lucide 线性风格） */
+        .dplayer-controller .dplayer-icons-left,
+        .dplayer-controller .dplayer-icons-right {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            height: 100%;
+        }
+        .dplayer-controller .dplayer-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: var(--icon-btn);
+            height: var(--icon-btn);
+            padding: 0;
+            margin: 0;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 4px;
+            vertical-align: middle;
+            flex-shrink: 0;
+        }
+        .dplayer-icon-content {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, .92);
+            transition: color .2s;
+            width: 100%;
+            height: 100%;
+        }
+        .dplayer-icon-content svg {
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            width: var(--icon-svg);
+            height: var(--icon-svg);
+            display: block;
+        }
+        .dplayer-icon-content svg.filled {
+            fill: currentColor;
+            stroke: none;
+        }
+        .dplayer-icon:hover .dplayer-icon-content { color: var(--bili-blue); }
+        .dplayer svg path, .dplayer svg circle, .dplayer svg rect { fill: inherit; stroke: inherit; }
+        .dplayer svg path[data-fill] { fill: currentColor; stroke: none; }
+
+        /* 顶部渐变遮罩 + 标题 */
+        .dplayer-video-wrap::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 84px;
+            background: linear-gradient(180deg, rgba(0,0,0,.5) 0%, transparent 100%);
+            z-index: 2;
+            pointer-events: none;
+            transition: opacity .3s;
+        }
+        .dplayer-hide-controller .dplayer-video-wrap::before { opacity: 0; }
+
+        .bili-title {
+            position: absolute;
+            top: clamp(10px, 3.6vw, 14px); left: clamp(12px, 4.6vw, 18px);
+            z-index: 3;
+            color: rgba(255, 255, 255, .92);
+            font-size: var(--title-fs);
+            font-weight: 500;
+            letter-spacing: .3px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, .6);
+            max-width: 60%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            pointer-events: none;
+            transition: opacity .3s;
+        }
+        .bili-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px; height: 13px;
+            border-radius: 2px;
+            background: linear-gradient(180deg, var(--bili-blue), var(--bili-pink));
+            margin-right: 8px;
+            vertical-align: -1px;
+        }
+        .dplayer-hide-controller ~ .bili-title { opacity: 0; }
+
+        /* 控制栏 */
+        .dplayer-controller {
+            background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.78) 100%);
+            height: calc(var(--ctrl-h) + env(safe-area-inset-bottom, 0px));
+            padding: 0 clamp(8px, 3vw, 12px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            z-index: 5;
+        }
+        .dplayer-controller-mask {
+            background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.78) 100%);
+            opacity: 1;
+            pointer-events: none;
+            z-index: 4;
+        }
+        .dplayer-controller .dplayer-icons {
+            z-index: 6;
+        }
+
+        /* 进度条 */
+        .dplayer-bar-wrap {
+            bottom: calc(var(--ctrl-h) + env(safe-area-inset-bottom, 0px) - 4px);
+            width: calc(100% - clamp(16px, 6vw, 24px));
+            height: 3px;
+            padding: 6px 0;
+        }
+        .dplayer-bar {
+            background: rgba(255, 255, 255, .22);
+            border-radius: 3px;
+            height: 3px;
+            transition: height .15s;
+        }
+        .dplayer-bar-wrap:hover .dplayer-bar { height: 5px; }
+        .dplayer-loaded { background: rgba(255, 255, 255, .35); border-radius: 3px; }
+        .dplayer-played {
+            background: linear-gradient(90deg, var(--bili-blue), #00c3f0);
+            border-radius: 3px;
+        }
+        .dplayer-thumb {
+            background: #fff;
+            border: none;
+            box-shadow: 0 0 6px rgba(0, 0, 0, .6);
+            transition: transform .15s;
+        }
+        .dplayer-bar-preview {
+            border: 1px solid rgba(255, 255, 255, .25);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .5);
+            border-radius: 4px;
+        }
+        .dplayer-bar-time {
+            background: rgba(0, 0, 0, .8);
+            border-radius: 8px;
+            font-size: 11px;
+            padding: 3px 8px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* 时间 */
+        .dplayer-controller .dplayer-time {
+            color: rgba(255, 255, 255, .88);
+            font-size: var(--time-fs);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+            line-height: var(--ctrl-h);
+            vertical-align: middle;
+        }
+        .dplayer-controller .dplayer-icon { overflow: visible; }
+
+        /* 禁用 DPlayer 自带弹幕输入框，改用自定义 bilibili 风格 */
+        .dplayer-controller .dplayer-icons.dplayer-comment-box,
+        .dplayer-icons.dplayer-comment-box {
+            display: none !important;
+        }
+
+        /* 自定义弹幕输入框（bilibili 风格） */
+        .bili-danmu {
+            position: absolute;
+            right: 218px;
+            bottom: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            gap: clamp(4px, 1.5vw, 6px);
+            z-index: 6;
+        }
+        .bili-danmu .bd-input {
+            width: var(--danmu-w);
+            height: var(--danmu-h);
+            padding: 0 12px;
+            background: rgba(255, 255, 255, .13);
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 14px;
+            font-size: 12.5px;
+            color: #fff;
+            outline: none;
+            transition: all .25s;
+            box-sizing: border-box;
+        }
+        .bili-danmu .bd-input:focus {
+            background: rgba(255, 255, 255, .2);
+            border-color: var(--bili-blue);
+        }
+        .bili-danmu .bd-input::placeholder { color: rgba(255, 255, 255, .55); }
+
+        .bili-danmu .bd-color {
+            position: relative;
+            width: clamp(20px, 6vw, 24px);
+            height: clamp(20px, 6vw, 24px);
+            flex: 0 0 clamp(20px, 6vw, 24px);
+            border: none;
+            border-radius: 50%;
+            background: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .bili-danmu .bd-color .dot {
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, .85);
+            box-shadow: 0 0 4px rgba(0, 0, 0, .4);
+        }
+        .bili-danmu .bd-color-panel {
+            position: absolute;
+            bottom: calc(var(--ctrl-h) - 4px);
+            right: 0;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px;
+            background: rgba(20, 20, 24, .94);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 10px;
+            z-index: 20;
+        }
+        .bili-danmu .bd-color-panel.open { display: flex; }
+        .bili-danmu .bd-colors { display: flex; gap: 8px; }
+        .bili-danmu .bd-colors button {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, .15);
+            cursor: pointer;
+            transition: transform .15s;
+            padding: 0;
+        }
+        .bili-danmu .bd-colors button:hover { transform: scale(1.2); }
+        .bili-danmu .bd-colors button.active {
+            border-color: #fff;
+            box-shadow: 0 0 0 2px var(--bili-blue);
+        }
+        .bili-danmu .bd-types { display: flex; gap: 6px; }
+        .bili-danmu .bd-types button {
+            flex: 1;
+            padding: 4px 10px;
+            border: 1px solid rgba(255, 255, 255, .3);
+            border-radius: 6px;
+            background: none;
+            color: rgba(255, 255, 255, .8);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .bili-danmu .bd-types button.active {
+            background: var(--bili-blue);
+            border-color: var(--bili-blue);
+            color: #fff;
+        }
+
+        .bili-danmu .bd-send {
+            width: clamp(22px, 7vw, 28px);
+            height: clamp(22px, 7vw, 28px);
+            flex: 0 0 clamp(22px, 7vw, 28px);
+            border: none;
+            border-radius: 50%;
+            background: none;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s;
+        }
+        .bili-danmu .bd-send:hover {
+            color: var(--bili-pink);
+            background: rgba(251, 114, 153, .12);
+        }
+
+        /* 弹幕遮蔽滑块（设置菜单内，无极调节——复刻透明度控件） */
+        .dplayer-controller .dplayer-icons .dplayer-setting .dplayer-setting-mask {
+            padding: 5px 0;
+            z-index: 1;
+        }
+        .dplayer-controller .dplayer-icons .dplayer-setting .dplayer-setting-mask .dplayer-label {
+            padding: 0 10px;
+            display: inline;
+            color: #fff;
+        }
+        .dplayer-controller .dplayer-icons .dplayer-setting .dplayer-setting-mask:hover .dplayer-label,
+        .dplayer-controller .dplayer-icons .dplayer-setting .dplayer-setting-mask.dplayer-setting-danmaku-active .dplayer-label {
             display: none;
         }
+        .dplayer-controller .dplayer-icons .dplayer-setting .dplayer-setting-mask .dplayer-mask-bar-wrap {
+            padding: 0 10px;
+            box-sizing: border-box;
+            display: none;
+            vertical-align: middle;
+            height: 100%;
+            width: 100%;
+        }
+        .dplayer-controller .dplayer-icons .dplayer-setting .dplayer-setting-mask:hover .dplayer-mask-bar-wrap,
+        .dplayer-controller .dplayer-icons .dplayer-setting .dplayer-setting-mask.dplayer-setting-danmaku-active .dplayer-mask-bar-wrap {
+            display: inline-block;
+        }
+        .dplayer-controller .dplayer-icons .dplayer-setting .dplayer-setting-mask .dplayer-mask-bar {
+            position: relative;
+            top: 8.5px;
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, .25);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all .3s ease-in-out;
+        }
+        .dplayer-controller .dplayer-icons .dplayer-setting .dplayer-setting-mask .dplayer-mask-bar-inner {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, var(--bili-blue), #00c3f0);
+            border-radius: 3px;
+            transition: all .1s ease;
+            will-change: width;
+        }
+        .dplayer-controller .dplayer-icons .dplayer-setting .dplayer-setting-mask .dplayer-mask-bar-inner .dplayer-thumb {
+            position: absolute;
+            top: 0;
+            right: 5px;
+            margin-top: -4px;
+            margin-right: -10px;
+            height: 11px;
+            width: 11px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            transition: all .3s ease-in-out;
+        }
+
+        /* 隐藏 DPlayer 自带弹幕按钮（用自定义开关替代） */
+        .dplayer-icons-right .dplayer-comment { display: none; }
+
+        /* 隐藏控制栏截图按钮，改用右侧悬浮按钮 */
+        .dplayer-camera-icon { display: none !important; }
+
+        /* 右侧中间悬浮截图按钮 */
+        .bili-screenshot {
+            position: absolute;
+            right: clamp(10px, 3vw, 14px);
+            top: 50%;
+            transform: translateY(-50%);
+            width: var(--shot);
+            height: var(--shot);
+            border-radius: 50%;
+            background: rgba(0, 0, 0, .35);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, .14);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 8;
+            transition: all .2s;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .dplayer:hover .bili-screenshot {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .bili-screenshot:hover {
+            background: rgba(0, 0, 0, .55);
+            color: var(--bili-blue);
+            transform: translateY(-50%) scale(1.08);
+        }
+
+        /* 弹幕设置面板 */
+        .dplayer-comment-setting-box {
+            background: rgba(20, 20, 24, .92) !important;
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 10px !important;
+            bottom: calc(var(--ctrl-h) + env(safe-area-inset-bottom, 0px)) !important;
+        }
+        .dplayer-comment-setting-box .dplayer-comment-setting-title { color: #fff !important; }
+        .dplayer-comment-setting-box .dplayer-comment-setting-type span {
+            border-color: rgba(255, 255, 255, .4) !important;
+            color: #fff !important;
+        }
+        .dplayer-comment-setting-box .dplayer-comment-setting-type input:checked + span {
+            background: var(--bili-blue) !important;
+            color: #fff !important;
+            border-color: var(--bili-blue) !important;
+        }
+
+        /* 音量 */
+        .dplayer-volume-bar-wrap .dplayer-volume-bar {
+            background: rgba(255, 255, 255, .22);
+            border-radius: 3px;
+        }
+        .dplayer-volume-bar-wrap .dplayer-volume-bar-inner {
+            background: linear-gradient(90deg, var(--bili-blue), #00c3f0);
+            border-radius: 3px;
+        }
+
+        /* 设置菜单 */
+        .dplayer-setting-box {
+            background: rgba(20, 20, 24, .94) !important;
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 10px !important;
+            color: #fff;
+        }
+        .dplayer-setting-box .dplayer-setting-item:hover { background: rgba(255, 255, 255, .06); }
+        .dplayer-setting-box .dplayer-label { color: #fff; }
+        .dplayer-setting-box .dplayer-toggle i::before {
+            background: var(--bili-blue);
+            border-color: var(--bili-blue);
+        }
+
+        /* 统计信息面板 */
+        .dplayer-controller .dplayer-setting-box.dplayer-setting-box-stats {
+            width: 236px !important;
+        }
+        .dplayer-controller .dplayer-setting-box.dplayer-setting-box-stats .dplayer-setting-origin-panel {
+            display: none !important;
+        }
+        .dplayer-controller .dplayer-setting-box.dplayer-setting-box-stats .dplayer-setting-stats-panel {
+            display: block !important;
+        }
+        .dplayer-setting-stats-panel { padding-bottom: 6px; }
+        .dplayer-setting-stats-back {
+            border-bottom: 1px solid rgba(255, 255, 255, .08);
+            margin-bottom: 2px;
+            color: rgba(255, 255, 255, .75);
+        }
+        .dplayer-stats-sec {
+            font-size: 11px;
+            color: var(--bili-blue);
+            padding: 8px 12px 4px;
+            letter-spacing: .5px;
+        }
+        .dplayer-stats-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 3px 12px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, .85);
+        }
+        .dplayer-stats-row b { font-weight: 500; color: #fff; }
+        .dplayer-badge {
+            font-size: 10.5px;
+            line-height: 16px;
+            padding: 0 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        .dplayer-badge.ok { background: rgba(45, 211, 111, .16); color: #2dd36f; }
+        .dplayer-badge.soft { background: rgba(255, 190, 51, .16); color: #ffbe33; }
+        .dplayer-badge.no { background: rgba(255, 77, 106, .16); color: #ff4d6a; }
+
+        /* 右键菜单 */
+        .dplayer-menu {
+            background: rgba(20, 20, 24, .96) !important;
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 10px !important;
+            color: #fff;
+        }
+        .dplayer-menu-item:hover { background: rgba(255, 255, 255, .06) !important; }
+
+        /* 播放大按钮 */
+        .dplayer-bezel-icon {
+            background: rgba(0, 0, 0, .4);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, .12);
+        }
+        .dplayer-bezel-icon .dplayer-icon-content { color: #fff; }
+        .dplayer-bezel-icon .dplayer-icon-content svg { width: clamp(20px, 6.5vw, 24px); height: clamp(20px, 6.5vw, 24px); }
+
+        /* 弹幕文字 */
+        .dplayer-danmaku-item {
+            font-family: 'MiSans', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            font-weight: 500;
+            font-size: var(--dm-font);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, .75);
+        }
+
+        /* 加载动画 */
+        .dplayer-loading .dplayer-loading-icon {
+            filter: drop-shadow(0 0 8px rgba(0, 161, 214, .6));
+        }
+
+        /* 通知 */
+        .dplayer-notice {
+            background: rgba(0, 0, 0, .75) !important;
+            border-radius: 6px !important;
+            backdrop-filter: blur(6px);
+            font-size: 13px;
+        }
+
+        /* 悬浮提示 */
+        [data-balloon]::after {
+            background: rgba(20, 20, 24, .95) !important;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, .1);
+            font-size: 11px !important;
+        }
+
+        /* 移动端 */
+        @media (max-width: 640px) {
+            .bili-title { top: clamp(8px, 2.6vw, 10px); left: clamp(10px, 3.2vw, 12px); }
+            .bili-danmu { right: 152px; }
+            .dplayer-controller { padding: 0 8px; }
+            .dplayer-bar-wrap { width: calc(100% - 16px); }
+        }
     </style>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.css">
 </head>
 <body>
-    <div id="dplayer"></div>
-    <div class="error-msg" id="errorMsg"></div>
+    <div id="app">
+        <div id="player-wrapper">
+            <div id="dplayer"></div>
+            <div class="bili-title" id="videoTitle"></div>
+            <div id="overlay" class="active">
+                <div class="overlay-card" id="welcomeCard">
+                    <div class="icon loading">&#9654;</div>
+                    <h2>DPlayer 弹幕播放器</h2>
+                    <p>在地址栏添加 <span class="code">?url=视频链接</span> 开始播放</p>
+                    <input type="text" id="urlInput" placeholder="粘贴视频地址 (支持 mp4 / m3u8 / flv)">
+                    <button onclick="loadFromInput()">开始播放</button>
+                </div>
+                <div class="overlay-card hidden" id="errorCard">
+                    <div class="icon error">&#10006;</div>
+                    <h2>播放出错</h2>
+                    <p id="errorText"></p>
+                    <input type="text" id="urlInputRetry" placeholder="重新输入视频地址">
+                    <button onclick="loadFromInput(true)">重试</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="toast"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js/dist/hls.min.js"></script>
@@ -45,119 +794,715 @@
     <script>
         let dp = null;
 
-        function getUrlParam(name) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(name);
+        function qs(name) {
+            return new URLSearchParams(location.search).get(name);
         }
 
-        // 根据URL生成稳定的视频ID（用于弹幕分组）
         function getVideoId(url) {
             let vid = url;
-            try {
-                const urlObj = new URL(url);
-                vid = urlObj.pathname + urlObj.search;
-            } catch (e) {
-                // 如果不是完整URL，直接使用
-            }
-            // 简单hash（与原版保持一致）
+            try { const u = new URL(url); vid = u.pathname + u.search; } catch (e) {}
             let hash = 0;
             for (let i = 0; i < vid.length; i++) {
-                const char = vid.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash;
+                hash = ((hash << 5) - hash) + vid.charCodeAt(i);
+                hash |= 0;
             }
             return Math.abs(hash).toString(36);
         }
 
         function getVideoType(url) {
-            const urlLower = url.toLowerCase();
-            if (urlLower.includes('.m3u8') || urlLower.includes('m3u8')) {
-                return 'hls';
-            } else if (urlLower.includes('.flv') || urlLower.includes('flv')) {
-                return 'flv';
-            }
+            const l = url.toLowerCase();
+            if (l.includes('.m3u8') || l.includes('m3u8')) return 'hls';
+            if (l.includes('.flv') || l.includes('flv')) return 'flv';
             return 'normal';
         }
 
-        function showError(msg) {
-            const errorEl = document.getElementById('errorMsg');
-            errorEl.textContent = msg;
-            errorEl.style.display = 'block';
+        function showToast(msg, error) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast show';
+            if (error) t.style.background = 'rgba(255,77,106,0.15)';
+            clearTimeout(t._timer);
+            t._timer = setTimeout(() => {
+                t.classList.remove('show');
+                t.style.background = '';
+            }, 2500);
         }
 
-        function hideError() {
-            document.getElementById('errorMsg').style.display = 'none';
+        function showError(msg) {
+            document.getElementById('errorText').textContent = msg;
+            document.getElementById('welcomeCard').classList.add('hidden');
+            document.getElementById('errorCard').classList.remove('hidden');
+            document.getElementById('overlay').classList.remove('hidden');
+            document.getElementById('overlay').classList.add('active');
+        }
+
+        function hideOverlay() {
+            document.getElementById('overlay').classList.add('hidden');
+        }
+
+        function loadFromInput(retry) {
+            const input = retry
+                ? document.getElementById('urlInputRetry')
+                : document.getElementById('urlInput');
+            const url = input.value.trim();
+            if (!url) { showToast('请输入视频地址', true); return; }
+            initPlayer(url);
         }
 
         async function initPlayer(url) {
-            if (!url) {
-                showError('请提供视频地址，格式：/player/?url=视频链接');
-                return;
+            let decoded = decodeURIComponent(url).trim();
+            if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(decoded) && !decoded.startsWith('/')) {
+                decoded = '/' + decoded;
             }
 
-            const videoUrl = decodeURIComponent(url);
-            const videoType = getVideoType(videoUrl);
-            
-            // 支持手动指定视频 ID（用于测试），否则自动生成
-            const manualVid = getUrlParam('vid');
-            const vid = manualVid || getVideoId(videoUrl);
+            try {
+                const r = await fetch('/api/config/public');
+                const d = await r.json();
+                if (d.code === 0) {
+                    if (d.data.cdn && d.data.cdn.enabled && d.data.cdn.baseUrl) {
+                        const base = d.data.cdn.baseUrl.replace(/\/+$/, '');
+                        if (!/^https?:\/\//i.test(decoded)) {
+                            decoded = base + (decoded.startsWith('/') ? '' : '/') + decoded;
+                        }
+                    }
+                    if (!localStorage.getItem('dp_theme') && d.data.theme) {
+                        setTheme(d.data.theme);
+                    }
+                }
+            } catch (e) {}
 
-            console.log('[播放器] 初始化 - 视频URL:', videoUrl);
-            console.log('[播放器] 视频类型:', videoType);
-            console.log('[播放器] 视频ID:', vid);
+            const videoType = getVideoType(decoded);
+            const vid = qs('vid') || getVideoId(decoded);
+
+            try { fetch('/api/video/map', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ vid, url: decoded }) }).catch(() => {}); } catch (e) {}
+
+            const title = qs('title') || decoded.split('/').pop() || decoded;
+            const titleEl = document.getElementById('videoTitle');
+            titleEl.textContent = title;
+            titleEl.style.display = 'block';
+
+            let subtitleUrl = qs('subtitle') || '';
+            if (!subtitleUrl) {
+                try {
+                    const r = await fetch('/api/subtitle/detect?url=' + encodeURIComponent(decoded));
+                    const d = await r.json();
+                    if (d.code === 0 && d.data.subtitle) subtitleUrl = d.data.subtitle;
+                } catch (e) {}
+            }
 
             const options = {
                 container: document.getElementById('dplayer'),
                 autoplay: true,
-                theme: '#00d9ff',
+                theme: '#00a1d6',
                 loop: false,
                 lang: 'zh-cn',
                 screenshot: true,
                 hotkey: true,
                 preload: 'auto',
                 volume: 0.7,
-                video: {
-                    url: videoUrl
-                },
+                video: { url: decoded },
                 danmaku: {
                     id: vid,
                     user: 'user_' + Math.random().toString(36).substr(2, 6),
                     api: '/api/danmu/',
                     bottom: '10%',
-                    unlimited: false
+                    unlimited: false,
+                    maximum: 3000
                 }
             };
 
-            if (videoType === 'hls') {
-                options.video.type = 'hls';
-            } else if (videoType === 'flv') {
-                options.video.type = 'flv';
+            if (subtitleUrl) {
+                options.subtitle = {
+                    url: subtitleUrl,
+                    type: subtitleUrl.endsWith('.vtt') || subtitleUrl.endsWith('.webvtt') ? 'webvtt' : 'srt',
+                    fontSize: '20px',
+                    bottom: '40px',
+                    color: '#fff'
+                };
             }
 
-            if (dp) {
-                dp.destroy();
-            }
+            if (videoType === 'hls') options.video.type = 'hls';
+            else if (videoType === 'flv') options.video.type = 'flv';
+
+            if (dp) dp.destroy();
 
             try {
                 dp = new DPlayer(options);
-                hideError();
-                
-                console.log('[播放器] 弹幕配置:', options.danmaku);
-                
-                // 监听弹幕事件
-                dp.on('danmaku_loaded', function() {
-                    console.log('[弹幕] 弹幕加载完成');
-                });
+                hideOverlay();
+
+                const saved = parseFloat(localStorage.getItem('dp_pos_' + vid)) || 0;
+                if (saved > 3 && dp.video.duration - saved > 10) {
+                    setTimeout(() => dp.seek(saved), 300);
+                }
+
+                setInterval(() => {
+                    if (dp && dp.video && !dp.video.paused) {
+                        localStorage.setItem('dp_pos_' + vid, dp.video.currentTime);
+                    }
+                }, 5000);
+
+                setupCommentBox();
+                applyDanmakuMask(danmakuMask);
+                injectDanmakuToggle();
+                injectScreenshotButton();
+                addStatsItem();
+                addMaskSetting();
+                applyIcons();
+                bindIconEvents();
+
+                let videoOk = false;
+                const video = document.querySelector('#dplayer video');
+                if (video) {
+                    video.addEventListener('loadeddata', () => { videoOk = true; });
+                    video.addEventListener('playing', () => { videoOk = true; });
+                    video.addEventListener('error', (e) => {
+                        if (videoOk || video.readyState > 0) {
+                            showToast('视频加载出现暂时性问题，已忽略', true);
+                            return;
+                        }
+                        const v = e.target;
+                        const code = v.error ? v.error.code : '';
+                        const msg = code === 4 ? '视频格式不支持' : code === 3 ? '视频解码失败' : code === 2 ? '网络错误' : '视频加载失败';
+                        showError(`${msg}，请检查地址是否正确`);
+                    });
+                }
             } catch (e) {
                 showError('播放器初始化失败: ' + e.message);
-                console.error('[播放器] 初始化错误:', e);
             }
         }
 
-        window.onload = function() {
-            const videoUrl = getUrlParam('url');
-            initPlayer(videoUrl);
+        let danmakuVisible = true;
+        let danmakuMask = parseInt(localStorage.getItem('dp_danmu_mask') || '0') || 0;
+        let currentTheme = localStorage.getItem('dp_theme') || 'bilibili';
+
+        function setTheme(name) {
+            currentTheme = name;
+            document.documentElement.dataset.theme = name;
+            localStorage.setItem('dp_theme', name);
+            if (dp && dp.options) dp.options.theme = getComputedStyle(document.documentElement).getPropertyValue('--bili-blue').trim();
+            // 更新 DPlayer 主题色（进度条等）
+            const el = document.querySelector('.dplayer-played');
+            if (el) el.style.background = 'linear-gradient(90deg, var(--bili-blue), var(--bili-pink))';
+        }
+        setTheme(currentTheme);
+
+        function applyDanmakuMask(v) {
+            danmakuMask = v;
+            localStorage.setItem('dp_danmu_mask', String(v));
+            const d = document.querySelector('.dplayer-danmaku');
+            if (d) {
+                d.style.bottom = v > 0 ? v + '%' : '';
+            }
+            if (dp && dp.danmaku && dp.danmaku.dan) {
+                const now = dp.video ? dp.video.currentTime : 0;
+                dp.danmaku.clear();
+                let idx = 0;
+                const dan = dp.danmaku.dan;
+                while (idx < dan.length && dan[idx].time < now) idx++;
+                dp.danmaku.danIndex = idx;
+            }
+        }
+
+        /* ===== 现代图标（Lucide 线性风格） ===== */
+        function lucide(paths, opts) {
+            const { size = 18, filled = false } = opts || {};
+            return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${size}" height="${size}"${filled ? ' class="filled"' : ''}>${paths}</svg>`;
+        }
+
+        const ICONS = {
+            play: () => lucide('<path d="M8 5v14l11-7z"/>', { filled: true }),
+            pause: () => lucide('<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/>', { filled: true }),
+            volumeUp: () => lucide('<path d="M11 5 6 9H2v6h4l5 4z" data-fill="1"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9.5 9.5 0 0 1 0 13"/>'),
+            volumeOff: () => lucide('<path d="M11 5 6 9H2v6h4l5 4z" data-fill="1"/><path d="m16 9 5 6M21 9l-5 6"/>'),
+            comment: () => lucide('<path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
+            camera: () => lucide('<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>'),
+            setting: () => lucide('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'),
+            full: () => lucide('<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>'),
+            fullWeb: () => lucide('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),
+            send: () => lucide('<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/>', { filled: true }),
+            palette: () => lucide('<path d="M12 22a10 10 0 1 1 10-10c0 2.5-2 3-3.5 3H16a3 3 0 0 0-2 5c.5.6.3 1.3-.3 1.7-.5.3-1.1.5-1.7.6v-.3z"/><circle cx="7.5" cy="10.5" r="1.3"/><circle cx="11" cy="7.5" r="1.3"/><circle cx="15.5" cy="9.5" r="1.3"/>', { filled: true }),
+            right: () => lucide('<path d="m9 18 6-6-6-6"/>')
         };
+
+        function setIcon(selector, iconSvg) {
+            const el = document.querySelector(selector);
+            if (el) el.innerHTML = '<span class="dplayer-icon-content">' + iconSvg + '</span>';
+        }
+
+        function applyIcons() {
+            if (!dp) return;
+            setIcon('.dplayer-play-icon', dp.video.paused ? ICONS.play() : ICONS.pause());
+            const muted = dp.video.muted || dp.video.volume === 0;
+            setIcon('.dplayer-volume-icon', muted ? ICONS.volumeOff() : ICONS.volumeUp());
+            setIcon('.dplayer-camera-icon', ICONS.camera());
+            setIcon('.dplayer-setting-icon', ICONS.setting());
+            setIcon('.dplayer-full-icon', ICONS.full());
+            setIcon('.dplayer-full-in-icon', ICONS.fullWeb());
+            setIcon('.dplayer-comment-setting-icon', ICONS.palette());
+            setIcon('.dplayer-bezel-icon', dp.video.paused ? ICONS.play() : ICONS.pause());
+
+            document.querySelectorAll('.dplayer-setting-item .dplayer-toggle').forEach(t => {
+                if (!t.querySelector('input')) t.innerHTML = ICONS.right();
+            });
+        }
+
+        function bindIconEvents() {
+            if (!dp) return;
+            dp.on('play', applyIcons);
+            dp.on('pause', applyIcons);
+            dp.on('volumechange', applyIcons);
+            dp.on('fullscreen', applyIcons);
+            dp.on('fullscreen_cancel', applyIcons);
+        }
+
+        /* 自定义 bilibili 风格弹幕输入框（完全独立，不依赖 DPlayer 评论模式） */
+        function setupCommentBox() {
+            const controller = document.querySelector('.dplayer-controller');
+            if (!controller || document.querySelector('.bili-danmu')) return;
+
+            const colors = ['#ffffff', '#e54256', '#ffe133', '#64dd17', '#39ccff', '#fb7299', '#a855f7'];
+            const types = [
+                { v: 0, n: '滚动' },
+                { v: 1, n: '顶部' },
+                { v: 2, n: '底部' }
+            ];
+            let curColor = '#ffffff', curType = 0;
+
+            const wrap = document.createElement('div');
+            wrap.className = 'bili-danmu';
+
+            const colorBtn = document.createElement('button');
+            colorBtn.className = 'bd-color';
+            colorBtn.title = '弹幕设置';
+            colorBtn.innerHTML = '<span class="dot" style="background:' + curColor + '"></span>';
+
+            const panel = document.createElement('div');
+            panel.className = 'bd-color-panel';
+            panel.innerHTML =
+                '<div class="bd-colors">' + colors.map(c =>
+                    '<button data-c="' + c + '" style="background:' + c + '"></button>'
+                ).join('') + '</div>' +
+                '<div class="bd-types">' + types.map(t =>
+                    '<button data-t="' + t.v + '">' + t.n + '</button>'
+                ).join('') + '</div>';
+
+            const input = document.createElement('input');
+            input.className = 'bd-input';
+            input.type = 'text';
+            input.maxLength = 30;
+            input.placeholder = '发个友善的弹幕见证当下';
+
+            const sendBtn = document.createElement('button');
+            sendBtn.className = 'bd-send';
+            sendBtn.title = '发送弹幕';
+            sendBtn.innerHTML = ICONS.send();
+
+            wrap.append(colorBtn, panel, input, sendBtn);
+            controller.appendChild(wrap);
+
+            colorBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                panel.classList.toggle('open');
+            });
+
+            panel.querySelectorAll('.bd-colors button').forEach(b => {
+                b.addEventListener('click', () => {
+                    curColor = b.dataset.c;
+                    colorBtn.querySelector('.dot').style.background = curColor;
+                    panel.querySelectorAll('.bd-colors button').forEach(x => x.classList.remove('active'));
+                    b.classList.add('active');
+                });
+            });
+
+            panel.querySelectorAll('.bd-types button').forEach(b => {
+                b.addEventListener('click', () => {
+                    curType = parseInt(b.dataset.t);
+                    panel.querySelectorAll('.bd-types button').forEach(x => x.classList.remove('active'));
+                    b.classList.add('active');
+                });
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!wrap.contains(e.target)) panel.classList.remove('open');
+            });
+
+            const doSend = () => {
+                const text = input.value.trim();
+                if (!text) { showToast('要输入弹幕内容哦', true); return; }
+                if (!dp || !dp.danmaku) { showToast('弹幕组件未就绪', true); return; }
+                dp.danmaku.send({ text, color: curColor, type: curType }, () => {
+                    input.value = '';
+                    showToast('弹幕已发送');
+                });
+            };
+
+            sendBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                doSend();
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    doSend();
+                }
+            });
+
+            const observer = new MutationObserver(() => {
+                if (controller.classList.contains('dplayer-controller-comment')) {
+                    controller.classList.remove('dplayer-controller-comment');
+                }
+            });
+            observer.observe(controller, { attributes: true, attributeFilter: ['class'] });
+        }
+
+        /* 右侧悬浮截图按钮 */
+        function injectScreenshotButton() {
+            if (document.querySelector('.bili-screenshot')) return;
+            const wrap = document.querySelector('.dplayer-video-wrap');
+            if (!wrap) return;
+
+            const btn = document.createElement('button');
+            btn.className = 'bili-screenshot';
+            btn.title = '截图';
+            btn.innerHTML = ICONS.camera();
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                takeScreenshot();
+            });
+            wrap.appendChild(btn);
+        }
+
+        function takeScreenshot() {
+            const video = dp ? dp.video : null;
+            if (!video || video.readyState < 2) {
+                showToast('视频未就绪', true);
+                return;
+            }
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                const a = document.createElement('a');
+                a.href = canvas.toDataURL('image/png');
+                a.download = 'screenshot-' + Date.now() + '.png';
+                a.click();
+                showToast('截图已保存');
+            } catch (err) {
+                showToast('截图失败（可能因跨域限制）', true);
+            }
+        }
+
+        function injectDanmakuToggle() {
+            const right = document.querySelector('.dplayer-controller .dplayer-icons-right');
+            if (!right || document.querySelector('.bili-danmaku-toggle')) return;
+            const btn = document.createElement('button');
+            btn.className = 'dplayer-icon bili-danmaku-toggle';
+            btn.title = '弹幕开/关';
+            btn.innerHTML = '<span class="dplayer-icon-content">' + ICONS.comment() + '</span>';
+
+            btn.addEventListener('click', () => {
+                danmakuVisible = !danmakuVisible;
+                if (dp && dp.danmaku) {
+                    danmakuVisible ? dp.danmaku.show() : dp.danmaku.hide();
+                    btn.style.opacity = danmakuVisible ? '1' : '.35';
+                }
+            });
+
+            right.insertBefore(btn, right.firstChild);
+        }
+
+        /* ===== 统计信息面板 ===== */
+        function fmtTime(s) {
+            if (!isFinite(s)) return '—';
+            s = Math.floor(s);
+            const h = Math.floor(s / 3600);
+            const m = Math.floor((s % 3600) / 60);
+            const sec = s % 60;
+            return (h > 0 ? h + ':' : '') + String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+        }
+
+        function codecName(c) {
+            if (!c) return '未知';
+            c = String(c).toLowerCase();
+            if (c === 'avc' || c.includes('avc1') || c.includes('h264')) return 'H.264 (AVC)';
+            if (c === 'hevc' || c.includes('hev1') || c.includes('hvc1') || c.includes('h265')) return 'HEVC (H.265)';
+            if (c === 'av1' || c.includes('av01')) return 'AV1';
+            if (c.includes('vp09') || c.includes('vp9')) return 'VP9';
+            if (c.includes('vp8')) return 'VP8';
+            return c;
+        }
+
+        function detectCodecSupport() {
+            const v = document.createElement('video');
+            const probe = (mime) => { try { return v.canPlayType(mime); } catch (e) { return ''; } };
+            return {
+                h264: probe('video/mp4; codecs="avc1.42E01E"') || probe('video/mp4; codecs="avc1.64001F"'),
+                hevc: probe('video/mp4; codecs="hev1.1.6.L93.B0"') || probe('video/mp4; codecs="hvc1.1.6.L93.B0"'),
+                hevc10: probe('video/mp4; codecs="hev1.2.4.L120.90"') || probe('video/mp4; codecs="hvc1.2.4.L120.90"'),
+                av1: probe('video/mp4; codecs="av01.0.05M.08"') || probe('video/webm; codecs="av01.0.05M.08"'),
+                vp9: probe('video/webm; codecs="vp9"')
+            };
+        }
+
+        function statsEl(id) {
+            return document.querySelector('.dplayer-setting-stats-panel #' + id);
+        }
+
+        function setBadge(id, val) {
+            const b = statsEl(id);
+            if (!b) return;
+            let cls = 'no', txt = '不支持';
+            if (val === 'probably') { cls = 'ok'; txt = '原生支持'; }
+            else if (val === 'maybe') { cls = 'soft'; txt = '可能支持'; }
+            b.className = 'dplayer-badge ' + cls;
+            b.textContent = txt;
+        }
+
+        async function probeMediaCaps() {
+            if (!navigator.mediaCapabilities || !navigator.mediaCapabilities.decodingInfo) return;
+            const items = [
+                { id: 'mc-hevc-1080', mime: 'video/mp4; codecs="hev1.1.6.L93.B0"', w: 1920, h: 1080, br: 8000000 },
+                { id: 'mc-hevc-4k', mime: 'video/mp4; codecs="hev1.2.4.L120.90"', w: 3840, h: 2160, br: 25000000 },
+                { id: 'mc-av1-1080', mime: 'video/mp4; codecs="av01.0.05M.08"', w: 1920, h: 1080, br: 6000000 },
+                { id: 'mc-av1-4k', mime: 'video/mp4; codecs="av01.0.05M.08"', w: 3840, h: 2160, br: 18000000 }
+            ];
+            for (const it of items) {
+                const el = statsEl(it.id);
+                if (!el) continue;
+                try {
+                    const r = await navigator.mediaCapabilities.decodingInfo({
+                        type: 'file',
+                        video: { contentType: it.mime, width: it.w, height: it.h, bitrate: it.br, framerate: 30 }
+                    });
+                    if (!r.supported) { el.className = 'dplayer-badge no'; el.textContent = '不支持'; }
+                    else if (r.smooth && r.powerEfficient) { el.className = 'dplayer-badge ok'; el.textContent = '硬解流畅'; }
+                    else if (r.smooth) { el.className = 'dplayer-badge soft'; el.textContent = '流畅'; }
+                    else { el.className = 'dplayer-badge soft'; el.textContent = '软解'; }
+                } catch (e) {
+                    el.className = 'dplayer-badge no';
+                    el.textContent = '—';
+                }
+            }
+        }
+
+        function buildStatsPanel() {
+            const v = dp ? dp.video : null;
+            if (!v) { return; }
+
+            const srcType = (dp.options && dp.options.video && dp.options.video.type) || 'normal';
+            const srcNames = { normal: 'MP4 / 直链', hls: 'HLS', flv: 'FLV', dash: 'DASH' };
+            statsEl('st-src').textContent = srcNames[srcType] || srcType;
+
+            let codec = '';
+            try {
+                if (srcType === 'hls' && dp.plugins && dp.plugins.hls) {
+                    const h = dp.plugins.hls;
+                    const lv = h.levels && h.levels[h.currentLevel || 0];
+                    codec = (lv && (lv.videoCodec || (lv.attrs && lv.attrs.CODECS))) || '';
+                } else if (srcType === 'flv' && dp.plugins && dp.plugins.flvjs && dp.plugins.flvjs.mediaInfo) {
+                    codec = dp.plugins.flvjs.mediaInfo.videoCodec || '';
+                }
+            } catch (e) {}
+            statsEl('st-codec').textContent = codec ? codecName(codec) : '浏览器原生解码';
+
+            statsEl('st-res').textContent = (v.videoWidth && v.videoHeight)
+                ? v.videoWidth + ' × ' + v.videoHeight : '—';
+            statsEl('st-dur').textContent = fmtTime(v.duration);
+
+            const sup = detectCodecSupport();
+            setBadge('st-h264', sup.h264);
+            setBadge('st-hevc', sup.hevc);
+            setBadge('st-hevc10', sup.hevc10);
+            setBadge('st-av1', sup.av1);
+            setBadge('st-vp9', sup.vp9);
+            probeMediaCaps();
+        }
+
+        function refreshLiveStats() {
+            const box = document.querySelector('.dplayer-setting-box');
+            if (!box || !box.classList.contains('dplayer-setting-box-open')) { stopLiveStats(); return; }
+            const v = dp ? dp.video : null;
+            if (!v) return;
+
+            if (v.getVideoPlaybackQuality) {
+                try {
+                    const q = v.getVideoPlaybackQuality();
+                    if (q) {
+                        statsEl('st-drop').textContent = q.droppedVideoFrames || 0;
+                        if (window._stFrames != null) {
+                            const dt = (performance.now() - window._stT0) / 1000;
+                            const fps = (q.totalVideoFrames - window._stFrames) / dt;
+                            if (dt > 0.8) {
+                                statsEl('st-fps').textContent = v.paused ? '—' : Math.round(fps) + ' fps';
+                                window._stFrames = q.totalVideoFrames;
+                                window._stT0 = performance.now();
+                            }
+                        } else {
+                            window._stFrames = q.totalVideoFrames;
+                            window._stT0 = performance.now();
+                            statsEl('st-fps').textContent = '…';
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            let bw = null;
+            try {
+                if (dp.plugins && dp.plugins.hls && dp.plugins.hls.bandwidthEstimate) {
+                    bw = dp.plugins.hls.bandwidthEstimate / 1024;
+                }
+            } catch (e) {}
+            statsEl('st-bw').textContent = bw ? (bw >= 1024 ? (bw / 1024).toFixed(1) + ' Mbps' : Math.round(bw) + ' Kbps') : '—';
+        }
+
+        let liveTimer = null;
+        function startLiveStats() {
+            stopLiveStats();
+            refreshLiveStats();
+            liveTimer = setInterval(refreshLiveStats, 1000);
+        }
+        function stopLiveStats() {
+            if (liveTimer) { clearInterval(liveTimer); liveTimer = null; }
+            window._stFrames = null;
+        }
+
+        function addStatsItem() {
+            const origin = document.querySelector('.dplayer-setting-origin-panel');
+            const box = document.querySelector('.dplayer-setting-box');
+            if (!origin || !box || document.querySelector('.dplayer-setting-stats')) return;
+            const item = document.createElement('div');
+            item.className = 'dplayer-setting-item dplayer-setting-stats';
+            item.innerHTML = '<span class="dplayer-label">统计信息</span><div class="dplayer-toggle">' + ICONS.right() + '</div>';
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                box.classList.remove('dplayer-setting-box-speed', 'dplayer-setting-box-narrow');
+                box.classList.add('dplayer-setting-box-stats');
+                buildStatsPanel();
+            });
+            origin.appendChild(item);
+
+            const panel = document.createElement('div');
+            panel.className = 'dplayer-setting-stats-panel';
+            panel.innerHTML =
+                '<div class="dplayer-setting-item dplayer-setting-stats-back"><span class="dplayer-label">‹ 返回</span></div>' +
+                '<div class="dplayer-stats-sec">视频信息</div>' +
+                '<div class="dplayer-stats-row"><span>编码</span><b id="st-codec">—</b></div>' +
+                '<div class="dplayer-stats-row"><span>源类型</span><b id="st-src">—</b></div>' +
+                '<div class="dplayer-stats-row"><span>分辨率</span><b id="st-res">—</b></div>' +
+                '<div class="dplayer-stats-row"><span>帧率</span><b id="st-fps">—</b></div>' +
+                '<div class="dplayer-stats-row"><span>丢帧</span><b id="st-drop">—</b></div>' +
+                '<div class="dplayer-stats-row"><span>码率</span><b id="st-bw">—</b></div>' +
+                '<div class="dplayer-stats-row"><span>时长</span><b id="st-dur">—</b></div>' +
+                '<div class="dplayer-stats-sec">浏览器解码能力</div>' +
+                '<div class="dplayer-stats-row"><span>H.264</span><span id="st-h264" class="dplayer-badge">—</span></div>' +
+                '<div class="dplayer-stats-row"><span>HEVC (H.265)</span><span id="st-hevc" class="dplayer-badge">—</span></div>' +
+                '<div class="dplayer-stats-row"><span>HEVC 10bit</span><span id="st-hevc10" class="dplayer-badge">—</span></div>' +
+                '<div class="dplayer-stats-row"><span>AV1</span><span id="st-av1" class="dplayer-badge">—</span></div>' +
+                '<div class="dplayer-stats-row"><span>VP9</span><span id="st-vp9" class="dplayer-badge">—</span></div>' +
+                '<div class="dplayer-stats-sec">硬解流畅度（媒体能力探测）</div>' +
+                '<div class="dplayer-stats-row"><span>HEVC 1080p</span><span id="mc-hevc-1080" class="dplayer-badge">—</span></div>' +
+                '<div class="dplayer-stats-row"><span>HEVC 4K</span><span id="mc-hevc-4k" class="dplayer-badge">—</span></div>' +
+                '<div class="dplayer-stats-row"><span>AV1 1080p</span><span id="mc-av1-1080" class="dplayer-badge">—</span></div>' +
+                '<div class="dplayer-stats-row"><span>AV1 4K</span><span id="mc-av1-4k" class="dplayer-badge">—</span></div>';
+            box.appendChild(panel);
+
+            panel.querySelector('.dplayer-setting-stats-back').addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                box.classList.remove('dplayer-setting-box-stats');
+            });
+
+            const obs = new MutationObserver(() => {
+                if (box.classList.contains('dplayer-setting-box-open')) {
+                    startLiveStats();
+                } else {
+                    if (box.classList.contains('dplayer-setting-box-stats')) {
+                        box.classList.remove('dplayer-setting-box-stats');
+                    }
+                    stopLiveStats();
+                }
+            });
+            obs.observe(box, { attributes: true, attributeFilter: ['class'] });
+        }
+
+        /* 设置菜单内：弹幕遮蔽滑块（无极调节） */
+        function addMaskSetting() {
+            const origin = document.querySelector('.dplayer-setting-origin-panel');
+            if (!origin || document.querySelector('.dplayer-setting-mask')) return;
+
+            const item = document.createElement('div');
+            item.className = 'dplayer-setting-item dplayer-setting-mask';
+            item.innerHTML =
+                '<span class="dplayer-label">弹幕遮蔽</span>' +
+                '<div class="dplayer-mask-bar-wrap">' +
+                '<div class="dplayer-mask-bar">' +
+                '<div class="dplayer-mask-bar-inner"><span class="dplayer-thumb"></span></div>' +
+                '</div>' +
+                '</div>';
+
+            const opacityItem = origin.querySelector('.dplayer-setting-danmaku');
+            if (opacityItem && opacityItem.parentNode) opacityItem.after(item);
+            else origin.appendChild(item);
+
+            const wrap = item.querySelector('.dplayer-mask-bar-wrap');
+            const bar = item.querySelector('.dplayer-mask-bar');
+            const inner = item.querySelector('.dplayer-mask-bar-inner');
+
+            const setFromEvent = (e) => {
+                const x = e.clientX || (e.touches && e.touches[0] && e.touches[0].clientX) || (e.changedTouches && e.changedTouches[0] && e.changedTouches[0].clientX);
+                if (x == null) return;
+                const rect = bar.getBoundingClientRect();
+                if (!rect.width) return;
+                let v = Math.round(((x - rect.left) / rect.width) * 100);
+                v = Math.max(0, Math.min(100, v));
+                applyDanmakuMask(v);
+                inner.style.width = v + '%';
+                item.classList.add('dplayer-setting-danmaku-active');
+            };
+
+            const dragMove = (e) => { e.preventDefault(); setFromEvent(e); };
+            const dragEnd = () => {
+                document.removeEventListener('mousemove', dragMove);
+                document.removeEventListener('mouseup', dragEnd);
+                document.removeEventListener('touchmove', dragMove);
+                document.removeEventListener('touchend', dragEnd);
+                item.classList.remove('dplayer-setting-danmaku-active');
+            };
+
+            wrap.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                setFromEvent(e);
+                document.addEventListener('mousemove', dragMove);
+                document.addEventListener('mouseup', dragEnd);
+            });
+            wrap.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                setFromEvent(e);
+                document.addEventListener('touchmove', dragMove, { passive: false });
+                document.addEventListener('touchend', dragEnd);
+            }, { passive: false });
+
+            inner.style.width = danmakuMask + '%';
+        }
+
+        document.getElementById('urlInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') loadFromInput();
+        });
+        document.getElementById('urlInputRetry').addEventListener('keypress', e => {
+            if (e.key === 'Enter') loadFromInput(true);
+        });
+
+        window.addEventListener('load', () => {
+            const url = qs('url');
+            if (url) {
+                document.getElementById('urlInput').value = decodeURIComponent(url);
+                initPlayer(url);
+            }
+        });
     </script>
 </body>
 </html>

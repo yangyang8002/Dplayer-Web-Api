@@ -3,455 +3,693 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>弹幕管理后台</title>
+    <title>弹幕管理 - DPlayer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Regular.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Medium.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Semibold.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Bold.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root, [data-theme="bilibili"] {
+            --bg: #080810; --sidebar: #0c0c18;
+            --surface: #111122; --surface2: #16162a;
+            --border: rgba(255, 255, 255, 0.06);
+            --text: #e4e4f0; --text2: #8e8ea8; --text3: #5c5c78;
+            --primary: #a78bfa; --primary2: #7c5cfc;
+            --accent: #62d5ff; --danger: #ff4d6a;
+            --success: #34d399; --warn: #f59e0b;
+            --radius: 10px; --radius-sm: 6px; --radius-lg: 14px;
         }
+        [data-theme="sakura"] {
+            --bg: #1a1218; --sidebar: #201820;
+            --surface: #2a1c26; --surface2: #342230;
+            --border: rgba(255,133,162,0.12);
+            --text: #f5e6ed; --text2: #c098aa; --text3: #8a6a7a;
+            --primary: #ff85a2; --primary2: #c792ea;
+            --accent: #f0a0c0; --danger: #ff6188;
+            --success: #ff85a2; --warn: #ffc06a;
+        }
+        [data-theme="ocean"] {
+            --bg: #0a1628; --sidebar: #0e1c30;
+            --surface: #101e36; --surface2: #162640;
+            --border: rgba(0,212,255,0.12);
+            --text: #d4edf4; --text2: #7ab0c0; --text3: #4a8090;
+            --primary: #00d4ff; --primary2: #5ce6c6;
+            --accent: #33eeff; --danger: #ff5370;
+            --success: #5ce6c6; --warn: #ffb84d;
+        }
+        [data-theme="sunset"] {
+            --bg: #1a1018; --sidebar: #241820;
+            --surface: #2a1826; --surface2: #342030;
+            --border: rgba(255,140,66,0.15);
+            --text: #f0e0d6; --text2: #b09580; --text3: #7a6550;
+            --primary: #ff8c42; --primary2: #e06c9f;
+            --accent: #ffa564; --danger: #ff5050;
+            --success: #ff8c42; --warn: #ffbe50;
+        }
+        [data-theme="forest"] {
+            --bg: #0d120b; --sidebar: #12180e;
+            --surface: #182114; --surface2: #1e2820;
+            --border: rgba(100,221,23,0.12);
+            --text: #d8e8d0; --text2: #8aaa7a; --text3: #5a7a4a;
+            --primary: #64dd17; --primary2: #69f0ae;
+            --accent: #76ff03; --danger: #ff5252;
+            --success: #69f0ae; --warn: #ccff00;
+        }
+        [data-theme="mono"] {
+            --bg: #060606; --sidebar: #0c0c0c;
+            --surface: #141414; --surface2: #1a1a1a;
+            --border: rgba(255,255,255,0.08);
+            --text: #e8e8e8; --text2: #888; --text3: #555;
+            --primary: #aaa; --primary2: #ddd;
+            --accent: #999; --danger: #ccc;
+            --success: #bbb; --warn: #aaa;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; font-size: 14px; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
-            color: #fff;
-        }
-        .login-container {
+            font-family: 'MiSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text);
             display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-        .login-box {
-            background: rgba(255,255,255,0.1);
-            padding: 40px;
-            border-radius: 16px;
-            backdrop-filter: blur(10px);
-            width: 100%;
-            max-width: 400px;
-        }
-        .login-box h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 24px;
-        }
-        .login-box input {
-            width: 100%;
-            padding: 14px 16px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            margin-bottom: 16px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            outline: none;
-        }
-        .login-box input::placeholder {
-            color: rgba(255,255,255,0.5);
-        }
-        .login-box button {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #00d9ff, #0099ff);
-            color: #fff;
-            font-size: 16px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .login-box button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 217, 255, 0.4);
-        }
-        .admin-container {
-            display: none;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .header h1 {
-            font-size: 24px;
-        }
-        .header button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            cursor: pointer;
-        }
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .tab {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .tab.active {
-            background: linear-gradient(135deg, #00d9ff, #0099ff);
-        }
-        .panel {
-            display: none;
-        }
-        .panel.active {
-            display: block;
-        }
-        .card {
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .card h2 {
-            font-size: 18px;
-            margin-bottom: 16px;
-        }
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .input-group input {
-            flex: 1;
-            padding: 12px 16px;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            outline: none;
-            font-size: 14px;
-        }
-        .input-group button {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #00d9ff, #0099ff);
-            color: #fff;
-            cursor: pointer;
-        }
-        .word-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .word-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255,100,100,0.2);
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-        }
-        .word-item .delete-btn {
-            background: none;
-            border: none;
-            color: #ff6b6b;
-            cursor: pointer;
-            font-size: 18px;
-            line-height: 1;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        th {
-            background: rgba(255,255,255,0.05);
-            font-weight: 500;
-        }
-        .danmu-text {
-            max-width: 300px;
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
-        .delete-btn-row {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            background: rgba(255,100,100,0.2);
-            color: #ff6b6b;
+
+        /* Login */
+        #loginPage {
+            position: fixed; inset: 0; z-index: 999;
+            display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(ellipse at 30% 20%, #1a1040 0%, var(--bg) 70%);
+        }
+        .login-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 40px 32px;
+            width: 380px;
+            text-align: center;
+            backdrop-filter: blur(20px);
+        }
+        .login-card .logo {
+            width: 52px; height: 52px; border-radius: 14px;
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px; font-size: 22px; color: #fff; font-weight: 700;
+        }
+        .login-card h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+        .login-card .sub { font-size: 12px; color: var(--text3); margin-bottom: 24px; }
+        .login-card input {
+            width: 100%; padding: 12px 16px; margin-bottom: 10px;
+            border: 1px solid var(--border); border-radius: var(--radius);
+            background: rgba(255,255,255,.03); color: #fff;
+            font-size: 14px; outline: none; text-align: center; letter-spacing: 1px;
+        }
+        .login-card input:focus { border-color: var(--primary2); }
+        .login-card input::placeholder { color: var(--text3); letter-spacing: 0; }
+        .login-card button {
+            width: 100%; padding: 12px; border: none; border-radius: var(--radius);
+            background: linear-gradient(135deg, var(--accent), var(--primary2));
+            color: #fff; font-size: 15px; font-weight: 600; cursor: pointer;
+            margin-top: 8px; transition: transform .15s, box-shadow .15s;
+        }
+        .login-card button:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(124,92,252,.3); }
+
+        /* Sidebar */
+        #sidebar {
+            width: 220px; min-width: 220px; height: 100%;
+            background: var(--sidebar);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column;
+            padding: 20px 0;
+        }
+        .side-brand {
+            display: flex; align-items: center; gap: 10px;
+            padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 16px;
+        }
+        .side-brand .mark {
+            width: 34px; height: 34px; border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; color: #fff; font-weight: 700;
+        }
+        .side-brand h1 { font-size: 17px; font-weight: 700; }
+        .side-nav { flex: 1; padding: 0 12px; display: flex; flex-direction: column; gap: 2px; }
+        .side-nav .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 14px; border-radius: var(--radius);
+            color: var(--text2); cursor: pointer; transition: all .15s;
+            font-size: 14px; font-weight: 500; border: none; background: none;
+            width: 100%; text-align: left;
+        }
+        .side-nav .nav-item:hover { background: rgba(255,255,255,.04); color: var(--text); }
+        .side-nav .nav-item.active {
+            background: linear-gradient(135deg, rgba(124,92,252,.15), rgba(98,213,255,.08));
+            color: var(--text);
+        }
+        .side-nav .nav-item .icon { font-size: 18px; width: 22px; text-align: center; }
+        .side-footer {
+            padding: 12px 20px; border-top: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .side-footer .user { font-size: 13px; color: var(--text2); }
+        .side-footer .logout { font-size: 12px; color: var(--text3); cursor: pointer; transition: color .15s; background: none; border: none; }
+        .side-footer .logout:hover { color: var(--danger); }
+
+        /* Main */
+        #mainPage { display: none; flex: 1; height: 100%; overflow-y: auto; padding: 28px 32px 40px; }
+        .page-title { font-size: 22px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
+        .page-title .icon { font-size: 20px; }
+
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 18px;
+        }
+        .card h3 {
+            font-size: 15px; font-weight: 600; margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .card h3 .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+        .row { display: flex; gap: 10px; }
+        .row input {
+            flex: 1; padding: 10px 14px; border: 1px solid var(--border);
+            border-radius: var(--radius-sm); background: rgba(255,255,255,.03);
+            color: #fff; font-size: 13px; outline: none;
+        }
+        .row input:focus { border-color: var(--primary2); }
+        .row input::placeholder { color: var(--text3); }
+
+        .btn {
+            padding: 8px 18px; border: 1px solid var(--border);
+            border-radius: var(--radius-sm); background: var(--surface2);
+            color: var(--text); cursor: pointer; font-size: 13px; font-weight: 500;
+            transition: all .15s; white-space: nowrap;
+        }
+        .btn:hover { border-color: rgba(255,255,255,.15); }
+        .btn-primary { border: none; background: linear-gradient(135deg, var(--primary2), var(--accent)); color: #fff; }
+        .btn-danger { color: var(--danger); border-color: rgba(255,77,106,.2); }
+        .btn-danger:hover { background: rgba(255,77,106,.12); }
+
+        .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+        .tag {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,77,106,.1); border: 1px solid rgba(255,77,106,.2);
+            color: var(--danger); padding: 5px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 500;
+        }
+        .tag .x { cursor: pointer; font-size: 15px; line-height: 1; opacity: .5; }
+        .tag .x:hover { opacity: 1; }
+
+        .empty-state { text-align: center; padding: 32px; color: var(--text3); font-size: 13px; }
+
+        .search-row { display: flex; gap: 10px; margin-bottom: 14px; }
+        .search-row input {
+            flex: 1; padding: 8px 14px; border: 1px solid var(--border);
+            border-radius: var(--radius-sm); background: rgba(255,255,255,.03);
+            color: #fff; font-size: 13px; outline: none; max-width: 240px;
+        }
+        .search-row input:focus { border-color: var(--primary2); }
+        .search-row input::placeholder { color: var(--text3); }
+
+        .pager { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; }
+        .pager .info { font-size: 12px; color: var(--text3); }
+        .pager button {
+            padding: 5px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+            background: var(--surface2); color: var(--text); cursor: pointer; font-size: 12px;
+        }
+        .pager button:hover:not(:disabled) { border-color: var(--primary2); }
+        .pager button:disabled { opacity: .3; cursor: default; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; color: var(--text2); font-size: 12px; }
+        tr:hover td { background: rgba(255,255,255,.015); }
+        .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: middle; margin-right: 6px; }
+
+        .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge.scroll { background: rgba(98,213,255,.15); color: var(--accent); }
+        .badge.top { background: rgba(167,139,250,.15); color: var(--primary); }
+        .badge.bottom { background: rgba(52,211,153,.15); color: var(--success); }
+
+        .cfg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+        .cfg-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+        }
+        .cfg-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+        .cfg-card h4 .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .cfg-row { display: flex; align-items: center; padding: 7px 0; font-size: 13px; gap: 8px; }
+        .cfg-row label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .cfg-row input[type="checkbox"] { accent-color: var(--primary2); }
+        .cfg-row input[type="number"], .cfg-row input[type="text"], .cfg-row input[type="password"] {
+            background: rgba(255,255,255,.03); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); color: var(--text); padding: 5px 6px;
+            font-size: 12px; outline: none; width: 72px;
+        }
+        .cfg-row input[type="text"] { width: auto; flex: 1; }
+        .cfg-row input[type="password"] { width: 68px; }
+        .cfg-row select {
+            background: var(--surface2) !important;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            padding: 6px 10px;
+            font-size: 13px;
+            outline: none;
             cursor: pointer;
-            font-size: 12px;
+            width: 100%;
         }
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 24px;
-            border-radius: 8px;
-            background: #4caf50;
-            color: #fff;
-            transform: translateX(200%);
-            transition: transform 0.3s;
-            z-index: 1000;
+        .cfg-row select option {
+            background: var(--surface);
+            color: var(--text);
         }
-        .toast.error {
-            background: #ff6b6b;
+        .cfg-row input:focus { border-color: var(--primary2); }
+        .cfg-row .btn-sm { padding: 5px 12px; font-size: 12px; }
+        .cfg-hint { font-size: 11px; color: var(--text3); }
+
+        #toast {
+            position: fixed; top: 20px; right: 24px; z-index: 9999;
+            padding: 12px 24px; border-radius: var(--radius);
+            font-size: 13px; font-weight: 500; pointer-events: none;
+            transform: translateX(120%); transition: transform .35s cubic-bezier(.4,0,.2,1);
+            backdrop-filter: blur(12px);
         }
-        .toast.show {
-            transform: translateX(0);
+        #toast.show { transform: translateX(0); }
+        #toast.ok { background: rgba(52,211,153,.18); color: var(--success); border: 1px solid rgba(52,211,153,.3); }
+        #toast.err { background: rgba(255,77,106,.18); color: var(--danger); border: 1px solid rgba(255,77,106,.3); }
+
+        @media (max-width: 768px) {
+            #sidebar { width: 64px; min-width: 64px; }
+            .side-brand h1, .side-nav .nav-item span, .side-footer .user { display: none; }
+            .side-brand { justify-content: center; padding: 0 0 16px; }
+            .side-nav .nav-item { justify-content: center; padding: 12px; }
+            #mainPage { padding: 20px 16px; }
+            .cfg-grid { grid-template-columns: 1fr; }
+            .dm-input { width: 100% !important; flex: 1 1 100% !important; }
         }
     </style>
 </head>
 <body>
-    <div class="login-container" id="loginContainer">
-        <div class="login-box">
-            <h1>弹幕管理后台</h1>
-            <input type="password" id="passwordInput" placeholder="请输入管理员密码">
-            <button onclick="login()">登录</button>
+    <div id="loginPage">
+        <div class="login-card">
+            <div class="logo">D</div>
+            <h1>DPlayer 管理后台</h1>
+            <p class="sub">弹幕管理 · 服务器配置</p>
+            <input type="text" id="usernameInput" placeholder="账号" autofocus>
+            <input type="password" id="passwordInput" placeholder="密码">
+            <button onclick="login()">登 录</button>
         </div>
     </div>
 
-    <div class="admin-container" id="adminContainer">
-        <div class="header">
-            <h1>弹幕管理后台</h1>
-            <button onclick="logout()">退出登录</button>
+    <aside id="sidebar">
+        <div class="side-brand"><div class="mark">D</div><h1>DPlayer</h1></div>
+        <nav class="side-nav">
+            <button class="nav-item active" data-tab="words" onclick="switchTab('words')"><span class="icon">&#9881;</span><span>屏蔽词管理</span></button>
+            <button class="nav-item" data-tab="danmu" onclick="switchTab('danmu')"><span class="icon">&#9733;</span><span>弹幕列表</span></button>
+            <button class="nav-item" data-tab="videos" onclick="switchTab('videos')"><span class="icon">&#9654;</span><span>视频管理</span></button>
+            <button class="nav-item" data-tab="config" onclick="switchTab('config')"><span class="icon">&#9776;</span><span>服务器配置</span></button>
+            <button class="nav-item" data-tab="about" onclick="switchTab('about')"><span class="icon">&#9432;</span><span>关于</span></button>
+        </nav>
+        <div class="side-footer">
+            <span class="user" id="sideUser">未登录</span>
+            <button class="logout" onclick="logout()">退出</button>
         </div>
+    </aside>
 
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('banned')">屏蔽词管理</button>
-            <button class="tab" onclick="switchTab('danmu')">弹幕列表</button>
-        </div>
-
-        <div class="panel active" id="bannedPanel">
+    <main id="mainPage">
+        <!-- Words -->
+        <div class="panel active" id="wordsPanel">
             <div class="card">
-                <h2>添加屏蔽词</h2>
-                <div class="input-group">
-                    <input type="text" id="newWordInput" placeholder="输入要屏蔽的关键词">
-                    <button onclick="addBannedWord()">添加</button>
+                <h3><span class="dot" style="background:var(--danger)"></span>添加屏蔽词</h3>
+                <div class="row">
+                    <input type="text" id="newWordInput" placeholder="输入要屏蔽的关键词...">
+                    <button class="btn btn-primary" onclick="addBannedWord()">添加</button>
                 </div>
             </div>
             <div class="card">
-                <h2>当前屏蔽词列表</h2>
-                <div class="word-list" id="wordList"></div>
+                <h3><span class="dot" style="background:var(--danger)"></span>屏蔽词列表 <span id="wordCount" style="font-weight:400;font-size:12px;color:var(--text3);margin-left:6px"></span></h3>
+                <div class="search-row"><input type="text" id="wordSearch" placeholder="搜索..." oninput="onWordSearch()"></div>
+                <div class="tags" id="wordList"><div class="empty-state">暂无屏蔽词</div></div>
+                <div class="pager" id="wordPager"></div>
             </div>
         </div>
 
+        <!-- Danmu -->
         <div class="panel" id="danmuPanel">
-            <div class="card">
-                <h2>弹幕记录</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>时间</th>
-                            <th>视频ID</th>
-                            <th>弹幕内容</th>
-                            <th>颜色</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="danmuTable"></tbody>
-                </table>
+            <div style="display:flex;gap:18px;flex-wrap:wrap">
+                <div style="flex:1;min-width:0">
+                    <div class="card">
+                        <h3><span class="dot" style="background:var(--primary)"></span>弹幕记录</h3>
+                        <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+                            <input type="text" id="dmFilterVid" placeholder="视频码" style="width:120px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:rgba(255,255,255,.03);color:#fff;font-size:12px;outline:none">
+                            <input type="text" id="dmFilterText" placeholder="搜索弹幕内容..." style="flex:1;min-width:140px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:rgba(255,255,255,.03);color:#fff;font-size:12px;outline:none">
+                            <button class="btn btn-primary btn-sm" onclick="applyDmFilter()">筛选</button>
+                            <button class="btn btn-sm" onclick="clearDmFilter()">清除</button>
+                        </div>
+                        <div style="overflow-x:auto">
+                            <table><thead><tr><th>时间</th><th>视频ID</th><th>内容</th><th>颜色</th><th>类型</th><th>操作</th></tr></thead><tbody id="danmuTbody"></tbody></table>
+                            <div class="empty-state" id="danmuEmpty" style="display:none">暂无弹幕</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="width:200px;flex-shrink:0">
+                    <div class="card">
+                        <h3 style="font-size:13px"><span class="dot" style="background:var(--accent);width:6px;height:6px"></span>视频码</h3>
+                        <div id="vidList" class="empty-state" style="font-size:12px">加载中...</div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="toast" id="toast"></div>
+        <!-- Videos -->
+        <div class="panel" id="videosPanel">
+            <div class="card">
+                <h3><span class="dot" style="background:var(--accent)"></span>添加 / 更新视频映射</h3>
+                <div class="row">
+                    <input type="text" id="newVid" placeholder="视频码 (vid)">
+                    <input type="text" id="newVidUrl" placeholder="视频链接 (URL)">
+                    <button class="btn btn-primary" onclick="addVideo()">保存</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3><span class="dot" style="background:var(--accent)"></span>视频列表 <span id="videoCount" style="font-weight:400;font-size:12px;color:var(--text3);margin-left:6px"></span></h3>
+                <div id="videoTable" class="empty-state">加载中...</div>
+            </div>
+        </div>
+
+        <!-- Config -->
+        <div class="panel" id="configPanel">
+            <div class="cfg-grid">
+                <div class="cfg-card">
+                    <h4><span class="dot" style="background:var(--accent);box-shadow:0 0 6px var(--accent)"></span>PoW 工作量证明</h4>
+                    <div class="cfg-row"><label><input type="checkbox" id="cfgPowEnabled"> 启用</label></div>
+                    <div class="cfg-row"><span>难度</span><input type="range" id="cfgPowDifficulty" min="1" max="6" value="4"><span id="cfgPowDiffVal" style="width:20px;text-align:center;font-size:12px">4</span></div>
+                </div>
+                <div class="cfg-card">
+                    <h4><span class="dot" style="background:var(--warn);box-shadow:0 0 6px var(--warn)"></span>速率限制</h4>
+                    <div class="cfg-row"><label><input type="checkbox" id="cfgRlEnabled"> 启用</label></div>
+                    <div class="cfg-row"><span>窗口(秒)</span><input type="number" id="cfgRlWindow" min="10" max="3600" step="10"></div>
+                    <div class="cfg-row"><span>上限</span><input type="number" id="cfgRlMax" min="10" max="10000" step="10"></div>
+                </div>
+                <div class="cfg-card">
+                    <h4><span class="dot" style="background:var(--danger);box-shadow:0 0 6px var(--danger)"></span>弹幕频率限制</h4>
+                    <div class="cfg-row"><label><input type="checkbox" id="cfgDlEnabled"> 启用</label></div>
+                    <div class="cfg-row"><span>每分钟</span><input type="number" id="cfgDlMax" min="1" max="120"></div>
+                </div>
+                <div class="cfg-card">
+                    <h4><span class="dot" style="background:var(--success);box-shadow:0 0 6px var(--success)"></span>CDN</h4>
+                    <div class="cfg-row"><label><input type="checkbox" id="cfgCdnEnabled"> 启用</label></div>
+                    <div class="cfg-row"><input type="text" id="cfgCdnUrl" placeholder="https://cdn.example.com" style="width:100%"></div>
+                </div>
+                <div class="cfg-card">
+                    <h4><span class="dot" style="background:var(--warn);box-shadow:0 0 6px var(--warn)"></span>播放器主题</h4>
+                    <div class="cfg-row">
+                        <select id="cfgTheme" onchange="setAdminTheme(this.value)">
+                            <option value="bilibili">bilibili - 深蓝粉</option>
+                            <option value="sakura">sakura - 粉白樱</option>
+                            <option value="ocean">ocean - 深海蓝</option>
+                            <option value="sunset">sunset - 日落橙</option>
+                            <option value="forest">forest - 森林绿</option>
+                            <option value="mono">mono - 黑白极简</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="cfg-card">
+                    <h4><span class="dot" style="background:var(--primary);box-shadow:0 0 6px var(--primary)"></span>安全入口</h4>
+                    <div class="cfg-row"><span>超时(分)</span><input type="number" id="cfgSessionMin" min="5" max="1440"></div>
+                    <div class="cfg-row"><span>入口路径</span><input type="text" id="cfgAdminPath" placeholder="默认 /admin/"></div>
+                    <div class="cfg-hint">自定义管理入口，如填 "secret" 则入口变为 /secret/</div>
+                    <div style="border-top:1px solid var(--border);margin:10px 0;padding-top:10px">
+                        <div class="cfg-row"><input type="text" id="cfgNewUser" placeholder="新用户名"><input type="password" id="cfgUserPwd" placeholder="密码"><button class="btn btn-sm" onclick="changeUsername()">改名</button></div>
+                        <div class="cfg-row" style="margin-top:4px"><input type="password" id="cfgOldPwd" placeholder="原密码"><input type="password" id="cfgNewPwd" placeholder="新密码"><button class="btn btn-sm" onclick="changePassword()">改密</button></div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="saveConfig()" style="width:200px;margin-top:14px;padding:12px">保存配置</button>
+            <div id="cfgMsg" style="margin-top:8px;font-size:13px"></div>
+        </div>
+
+        <!-- About -->
+        <div class="panel" id="aboutPanel">
+            <div class="card">
+                <h3><span class="dot" style="background:var(--primary);box-shadow:0 0 6px var(--primary)"></span>关于 DPlayer Web Api</h3>
+                <p style="font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:16px">
+                    DPlayer 弹幕播放器 Web 管理端，支持弹幕发送/管理、屏蔽词过滤、服务器安全配置、视频映射管理、主题切换等功能。
+                </p>
+                <div class="cfg-row">
+                    <span style="color:var(--text3)">版本</span>
+                    <span>v1.1.0</span>
+                </div>
+                <div class="cfg-row">
+                    <span style="color:var(--text3)">开发者</span>
+                    <span style="display:flex;align-items:center;gap:10px">
+                        <img src="https://github.com/yangyang8002.png" width="32" height="32" style="border-radius:50%;border:2px solid var(--accent)" alt="avatar">
+                        <a href="https://github.com/yangyang8002" target="_blank" style="color:var(--accent)">yangyang8002</a>
+                    </span>
+                </div>
+            </div>
+            <div class="card">
+                <h3><span class="dot" style="background:var(--success);box-shadow:0 0 6px var(--success)"></span>依赖与鸣谢</h3>
+                <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+                    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><a href="https://github.com/DIYgod/DPlayer" target="_blank" style="color:var(--accent);min-width:120px">DPlayer <span style="font-size:11px;color:var(--text3)">1.27.1</span></a><span style="color:var(--text2)">HTML5 弹幕播放器</span></div>
+                    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><a href="https://expressjs.com" target="_blank" style="color:var(--accent);min-width:120px">Express <span style="font-size:11px;color:var(--text3)">5.x</span></a><span style="color:var(--text2)">Node.js Web 框架</span></div>
+                    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><a href="https://github.com/video-dev/hls.js" target="_blank" style="color:var(--accent);min-width:120px">hls.js <span style="font-size:11px;color:var(--text3)">latest</span></a><span style="color:var(--text2)">HLS 流媒体播放</span></div>
+                    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><a href="https://github.com/bilibili/flv.js" target="_blank" style="color:var(--accent);min-width:120px">flv.js <span style="font-size:11px;color:var(--text3)">latest</span></a><span style="color:var(--text2)">FLV 流媒体播放</span></div>
+                    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><a href="https://github.com/microsoft/misans" target="_blank" style="color:var(--accent);min-width:120px">MiSans <span style="font-size:11px;color:var(--text3)">4.1</span></a><span style="color:var(--text2)">小米兰亭字体</span></div>
+                    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><a href="https://helmetjs.github.io" target="_blank" style="color:var(--accent);min-width:120px">Helmet <span style="font-size:11px;color:var(--text3)">8.x</span></a><span style="color:var(--text2)">HTTP 安全头</span></div>
+                    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><a href="https://github.com/express-rate-limit/express-rate-limit" target="_blank" style="color:var(--accent);min-width:120px">express-rate-limit <span style="font-size:11px;color:var(--text3)">7.x</span></a><span style="color:var(--text2)">API 速率限制</span></div>
+                    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><a href="https://github.com/konsheng/Sensitive-lexicon" target="_blank" style="color:var(--accent);min-width:120px">Sensitive-lexicon <span style="font-size:11px;color:var(--text3)">-</span></a><span style="color:var(--text2)">敏感词库</span></div>
+                </div>
+            </div>
+            <div class="card" style="text-align:center">
+                <p style="font-size:12px;color:var(--text3)">Made with &#10084; by yangyang8002</p>
+                <p style="font-size:11px;color:var(--text3);margin-top:4px">MIT License &copy; 2024-2026</p>
+            </div>
+        </div>
+
+    </main>
+    <div id="toast"></div>
 
     <script>
-        let adminPassword = '';
-
-        function showToast(msg, isError = false) {
-            const toast = document.getElementById('toast');
-            toast.textContent = msg;
-            toast.className = 'toast' + (isError ? ' error' : '');
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
+        let adminToken = '', adminUser = '';
+        let wordPage = 1, wordTotal = 0;
+        const WORD_LIMIT = 50;
+        function authHeaders() { return { 'Authorization': 'Bearer ' + adminToken, 'Content-Type': 'application/json' }; }
+        function setAdminTheme(name) { document.documentElement.dataset.theme = name; }
+        function toast(m, ok) {
+            const t = document.getElementById('toast');
+            t.textContent = m; t.className = ok ? 'toast ok show' : 'toast err show';
+            clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2800);
         }
 
         function login() {
-            adminPassword = document.getElementById('passwordInput').value;
-            if (!adminPassword) {
-                showToast('请输入密码', true);
-                return;
-            }
-
-            fetch('/api/admin/banned-words', {
-                headers: { 'X-Admin-Password': adminPassword }
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.code === 0) {
-                    document.getElementById('loginContainer').style.display = 'none';
-                    document.getElementById('adminContainer').style.display = 'block';
-                    loadBannedWords();
-                    loadDanmuList();
-                } else {
-                    showToast('密码错误', true);
-                }
-            })
-            .catch(() => showToast('登录失败', true));
+            const u = document.getElementById('usernameInput').value.trim();
+            const p = document.getElementById('passwordInput').value;
+            if (!u) return toast('请输入账号', false);
+            if (!p) return toast('请输入密码', false);
+            fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u, password: p }) })
+                .then(r => r.json()).then(d => {
+                    if (d.code === 0) {
+                        adminToken = d.data.token; adminUser = d.data.username;
+                        document.getElementById('loginPage').style.display = 'none';
+                        document.getElementById('mainPage').style.display = 'block';
+                        document.getElementById('sideUser').textContent = adminUser;
+                        loadBannedWords(); loadDanmu(); loadVids(); loadVideos(); loadConfig();
+                    } else toast(d.code === 429 ? '登录过频' : (d.msg || '失败'), false);
+                }).catch(() => toast('连接失败', false));
         }
 
         function logout() {
-            adminPassword = '';
-            document.getElementById('loginContainer').style.display = 'flex';
-            document.getElementById('adminContainer').style.display = 'none';
+            adminToken = ''; adminUser = '';
+            document.getElementById('mainPage').style.display = 'none';
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('usernameInput').value = '';
             document.getElementById('passwordInput').value = '';
+            document.getElementById('sideUser').textContent = '未登录';
         }
 
-        function switchTab(tab) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        function switchTab(name) {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === name));
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            
-            if (tab === 'banned') {
-                document.querySelector('.tab:nth-child(1)').classList.add('active');
-                document.getElementById('bannedPanel').classList.add('active');
-            } else {
-                document.querySelector('.tab:nth-child(2)').classList.add('active');
-                document.getElementById('danmuPanel').classList.add('active');
-            }
+            document.getElementById(name + 'Panel').classList.add('active');
         }
 
-        function loadBannedWords() {
-            fetch('/api/admin/banned-words', {
-                headers: { 'X-Admin-Password': adminPassword }
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.code === 0) {
-                    renderWordList(data.data);
-                }
-            });
+        function loadBannedWords(page) {
+            const s = document.getElementById('wordSearch').value.trim();
+            page = page || 1;
+            fetch(`/api/admin/banned-words?page=${page}&limit=${WORD_LIMIT}&search=${encodeURIComponent(s)}`, { headers: authHeaders() })
+                .then(r => r.json()).then(d => {
+                    if (d.code === 0) { wordPage = d.data.page; wordTotal = d.data.total; renderWordList(d.data.words); renderPager(); }
+                });
         }
-
-        function renderWordList(words) {
-            const container = document.getElementById('wordList');
-            container.innerHTML = words.map(word => `
-                <div class="word-item">
-                    <span>${escapeHtml(word)}</span>
-                    <button class="delete-btn" onclick="deleteBannedWord('${escapeHtml(word)}')">&times;</button>
-                </div>
-            `).join('');
+        function renderWordList(w) {
+            const c = document.getElementById('wordList');
+            c.innerHTML = w.length ? w.map(v => `<span class="tag">${esc(v)}<span class="x" onclick="deleteBannedWord('${esc(v)}')">&times;</span></span>`).join('') : '<div class="empty-state">暂无屏蔽词</div>';
+            document.getElementById('wordCount').textContent = `共 ${wordTotal} 条`;
         }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        function renderPager() {
+            const tp = Math.ceil(wordTotal / WORD_LIMIT);
+            const p = document.getElementById('wordPager');
+            if (tp <= 1) { p.innerHTML = ''; return; }
+            p.innerHTML = `<button ${wordPage<=1?'disabled':''} onclick="loadBannedWords(${wordPage-1})">上一页</button><span class="info">${wordPage}/${tp}</span><button ${wordPage>=tp?'disabled':''} onclick="loadBannedWords(${wordPage+1})">下一页</button>`;
         }
-
+        function onWordSearch() { wordPage = 1; loadBannedWords(1); }
+        function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
         function addBannedWord() {
-            const word = document.getElementById('newWordInput').value.trim();
-            if (!word) {
-                showToast('请输入关键词', true);
-                return;
-            }
+            const w = document.getElementById('newWordInput').value.trim();
+            if (!w) return toast('请输入关键词', false);
+            fetch('/api/admin/banned-words', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ word: w }) })
+                .then(r => r.json()).then(d => {
+                    if (d.code === 0) { toast('已添加', true); document.getElementById('newWordInput').value = ''; loadBannedWords(wordPage); }
+                    else toast(d.msg, false);
+                });
+        }
+        function deleteBannedWord(w) {
+            fetch('/api/admin/banned-words', { method: 'DELETE', headers: authHeaders(), body: JSON.stringify({ word: w }) })
+                .then(r => r.json()).then(d => {
+                    if (d.code === 0) { toast('已删除', true); const TP = Math.ceil((wordTotal - 1) / WORD_LIMIT); if (wordPage > TP && TP > 0) wordPage = TP; loadBannedWords(wordPage); }
+                });
+        }
 
-            fetch('/api/admin/banned-words', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Admin-Password': adminPassword
-                },
-                body: JSON.stringify({ word, password: adminPassword })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.code === 0) {
-                    showToast('添加成功');
-                    document.getElementById('newWordInput').value = '';
-                    renderWordList(data.data);
-                } else {
-                    showToast(data.msg, true);
-                }
+        function loadDanmu() {
+            const vid = document.getElementById('dmFilterVid').value.trim();
+            const search = document.getElementById('dmFilterText').value.trim();
+            let url = '/api/admin/danmu';
+            const params = [];
+            if (vid) params.push('vid=' + encodeURIComponent(vid));
+            if (search) params.push('search=' + encodeURIComponent(search));
+            if (params.length) url += '?' + params.join('&');
+            fetch(url, { headers: authHeaders() }).then(r => r.json()).then(d => { if (d.code === 0) renderDanmuTable(d.data); });
+        }
+        function applyDmFilter() { loadDanmu(); }
+        function clearDmFilter() {
+            document.getElementById('dmFilterVid').value = '';
+            document.getElementById('dmFilterText').value = '';
+            loadDanmu();
+        }
+        function loadVids() {
+            fetch('/api/admin/danmu/vids', { headers: authHeaders() }).then(r => r.json()).then(d => {
+                if (d.code === 0) renderVidList(d.data);
             });
         }
-
-        function deleteBannedWord(word) {
-            fetch('/api/admin/banned-words', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Admin-Password': adminPassword
-                },
-                body: JSON.stringify({ word, password: adminPassword })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.code === 0) {
-                    showToast('删除成功');
-                    renderWordList(data.data);
-                }
-            });
+        function renderVidList(vids) {
+            const c = document.getElementById('vidList');
+            if (!vids.length) { c.innerHTML = '<div class="empty-state" style="font-size:12px">暂无数据</div>'; return; }
+            c.innerHTML = vids.map(v => `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="filterByVid('${esc(v.vid)}')"><span style="font-size:12px;color:var(--text);font-family:monospace" title="${esc(v.vid)}">${esc(v.vid).slice(0,12)}</span><span style="font-size:11px;color:var(--text3);flex-shrink:0;margin-left:8px">${v.count}</span></div>`).join('');
         }
-
-        function loadDanmuList() {
-            fetch('/api/admin/danmu', {
-                headers: { 'X-Admin-Password': adminPassword }
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.code === 0) {
-                    renderDanmuTable(data.data);
-                }
-            });
+        function filterByVid(vid) {
+            document.getElementById('dmFilterVid').value = vid;
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === 'danmu'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('danmuPanel').classList.add('active');
+            loadDanmu();
         }
-
-        function renderDanmuTable(danmuList) {
-            const tbody = document.getElementById('danmuTable');
-            tbody.innerHTML = danmuList.map(d => `
-                <tr>
-                    <td>${new Date(d.date).toLocaleString()}</td>
-                    <td>${escapeHtml(d.vid || '-')}</td>
-                    <td class="danmu-text" style="color:${d.color}">${escapeHtml(d.text)}</td>
-                    <td>${d.color}</td>
-                    <td>
-                        <button class="delete-btn-row" onclick="deleteDanmu('${d.id}')">删除</button>
-                    </td>
-                </tr>
-            `).join('');
+        function renderDanmuTable(list) {
+            const tb = document.getElementById('danmuTbody'), em = document.getElementById('danmuEmpty');
+            if (!list.length) { tb.innerHTML = ''; em.style.display = 'block'; return; }
+            em.style.display = 'none';
+            tb.innerHTML = list.map(d => `<tr><td>${new Date(d.date).toLocaleString('zh-CN')}</td><td style="font-size:12px;color:var(--text3)">${esc(d.vid||'-')}</td><td><span class="swatch" style="background:${d.color}"></span>${esc(d.text)}</td><td style="font-size:12px;color:var(--text3)">${d.color}</td><td>${d.type==='top'?'<span class="badge top">顶部</span>':d.type==='bottom'?'<span class="badge bottom">底部</span>':'<span class="badge scroll">滚动</span>'}</td><td><button class="btn btn-danger" onclick="deleteDanmu('${d.id}')">删除</button></td></tr>`).join('');
         }
-
         function deleteDanmu(id) {
-            fetch('/api/admin/danmu', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Admin-Password': adminPassword
-                },
-                body: JSON.stringify({ id, password: adminPassword })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.code === 0) {
-                    showToast('删除成功');
-                    loadDanmuList();
-                }
-            });
+            if (!confirm('确认删除？')) return;
+            fetch('/api/admin/danmu', { method: 'DELETE', headers: authHeaders(), body: JSON.stringify({ id }) })
+                .then(r => r.json()).then(d => { if (d.code === 0) { toast('已删除', true); loadDanmu(); } });
         }
 
-        // 回车登录
-        document.getElementById('passwordInput').addEventListener('keypress', e => {
-            if (e.key === 'Enter') login();
-        });
+        function loadConfig() {
+            fetch('/api/admin/config', { headers: authHeaders() }).then(r => r.json()).then(d => {
+                if (d.code === 0) {
+                    const c = d.data;
+                    document.getElementById('cfgPowEnabled').checked = !!c.pow.enabled;
+                    document.getElementById('cfgPowDifficulty').value = c.pow.difficulty || 4;
+                    document.getElementById('cfgPowDiffVal').textContent = c.pow.difficulty || 4;
+                    document.getElementById('cfgRlEnabled').checked = !!c.rateLimit.enabled;
+                    document.getElementById('cfgRlWindow').value = (c.rateLimit.windowMs || 60000) / 1000;
+                    document.getElementById('cfgRlMax').value = c.rateLimit.max || 60;
+                    document.getElementById('cfgDlEnabled').checked = !!(c.danmakuLimit && c.danmakuLimit.enabled);
+                    document.getElementById('cfgDlMax').value = (c.danmakuLimit && c.danmakuLimit.maxPerMinute) || 10;
+                    document.getElementById('cfgSessionMin').value = (c.security && c.security.sessionMinutes) || 120;
+                    document.getElementById('cfgAdminPath').value = (c.security && c.security.adminPath) || '';
+                        document.getElementById('cfgCdnEnabled').checked = !!c.cdn.enabled;
+                        document.getElementById('cfgCdnUrl').value = c.cdn.baseUrl || '';
+                        document.getElementById('cfgTheme').value = c.theme || 'bilibili';
+                        setAdminTheme(c.theme || 'bilibili');
+                    }
+            });
+        }
+        document.getElementById('cfgPowDifficulty').addEventListener('input', function () { document.getElementById('cfgPowDiffVal').textContent = this.value; });
+        function saveConfig() {
+            const cfg = {
+                pow: { enabled: document.getElementById('cfgPowEnabled').checked, difficulty: parseInt(document.getElementById('cfgPowDifficulty').value) },
+                rateLimit: { enabled: document.getElementById('cfgRlEnabled').checked, windowMs: parseInt(document.getElementById('cfgRlWindow').value) * 1000, max: parseInt(document.getElementById('cfgRlMax').value) },
+                danmakuLimit: { enabled: document.getElementById('cfgDlEnabled').checked, maxPerMinute: parseInt(document.getElementById('cfgDlMax').value) },
+                security: { sessionMinutes: parseInt(document.getElementById('cfgSessionMin').value), adminPath: document.getElementById('cfgAdminPath').value.trim().replace(/^\/+|\/+$/g, '') },
+                theme: document.getElementById('cfgTheme').value,
+                cdn: { enabled: document.getElementById('cfgCdnEnabled').checked, baseUrl: document.getElementById('cfgCdnUrl').value.trim() }
+            };
+            fetch('/api/admin/config', { method: 'POST', headers: authHeaders(), body: JSON.stringify(cfg) })
+                .then(r => r.json()).then(d => {
+                    document.getElementById('cfgMsg').innerHTML = d.code === 0 ? '<span style="color:var(--success)">已保存，重启生效</span>' : '<span style="color:var(--danger)">保存失败</span>';
+                }).catch(() => { document.getElementById('cfgMsg').innerHTML = '<span style="color:var(--danger)">连接失败</span>'; });
+        }
+        function changePassword() {
+            const o = document.getElementById('cfgOldPwd').value, n = document.getElementById('cfgNewPwd').value;
+            if (!o) return toast('请输入原密码', false);
+            if (!n || n.length < 4) return toast('新密码至少4位', false);
+            fetch('/api/admin/change-password', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ oldPassword: o, newPassword: n }) })
+                .then(r => r.json()).then(d => {
+                    if (d.code === 0) { toast('已更新', true); document.getElementById('cfgOldPwd').value = ''; document.getElementById('cfgNewPwd').value = ''; }
+                    else toast(d.msg, false);
+                }).catch(() => toast('连接失败', false));
+        }
+        function changeUsername() {
+            const n = document.getElementById('cfgNewUser').value.trim(), p = document.getElementById('cfgUserPwd').value;
+            if (!n) return toast('请输入新用户名', false);
+            if (n.length < 2) return toast('用户名至少2位', false);
+            if (!p) return toast('请输入密码', false);
+            fetch('/api/admin/change-username', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ newUsername: n, password: p }) })
+                .then(r => r.json()).then(d => {
+                    if (d.code === 0) { if (d.data && d.data.token) { adminToken = d.data.token; adminUser = d.data.username; document.getElementById('sideUser').textContent = adminUser; } toast('已更换', true); document.getElementById('cfgNewUser').value = ''; document.getElementById('cfgUserPwd').value = ''; }
+                    else toast(d.msg, false);
+                }).catch(() => toast('连接失败', false));
+        }
 
-        // 回车添加关键词
-        document.getElementById('newWordInput').addEventListener('keypress', e => {
-            if (e.key === 'Enter') addBannedWord();
-        });
+        function loadVideos() {
+            fetch('/api/admin/videos', { headers: authHeaders() }).then(r => r.json()).then(d => {
+                if (d.code === 0) renderVideos(d.data);
+            });
+        }
+        function renderVideos(list) {
+            document.getElementById('videoCount').textContent = `共 ${list.length} 条`;
+            const c = document.getElementById('videoTable');
+            if (!list.length) { c.innerHTML = '<div class="empty-state">暂无映射，播放视频时会自动记录</div>'; return; }
+            c.innerHTML = `<table><thead><tr><th>视频码</th><th>链接</th><th>操作</th></tr></thead><tbody>${list.map(v=>`<tr><td style="font-size:12px;font-family:monospace;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(v.vid)}">${esc(v.vid)}</td><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><a href="${esc(v.url)}" target="_blank" style="color:var(--accent);font-size:12px">${esc(v.url)}</a></td><td><button class="btn btn-danger" onclick="deleteVideo('${esc(v.vid)}')">删除</button></td></tr>`).join('')}</tbody></table>`;
+        }
+        function addVideo() {
+            const vid = document.getElementById('newVid').value.trim();
+            const url = document.getElementById('newVidUrl').value.trim();
+            if (!vid || !url) return toast('请填写视频码和链接', false);
+            fetch('/api/admin/videos', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ vid, url }) })
+                .then(r => r.json()).then(d => {
+                    if (d.code === 0) { toast('已保存', true); document.getElementById('newVid').value=''; document.getElementById('newVidUrl').value=''; loadVideos(); }
+                    else toast(d.msg, false);
+                }).catch(() => toast('连接失败', false));
+        }
+        function deleteVideo(vid) {
+            if (!confirm('确认删除？')) return;
+            fetch('/api/admin/videos/delete', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ vid }) })
+                .then(r => r.json()).then(d => { if (d.code === 0) { toast('已删除', true); loadVideos(); } });
+        }
+
+        document.getElementById('passwordInput').addEventListener('keypress', e => { if (e.key === 'Enter') login(); });
+        document.getElementById('newWordInput').addEventListener('keypress', e => { if (e.key === 'Enter') addBannedWord(); });
     </script>
 </body>
 </html>

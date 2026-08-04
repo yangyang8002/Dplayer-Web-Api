@@ -1,12 +1,14 @@
 # Dependencies
 node_modules/
 
-# Data files (keep structure, ignore content)
+# Data files (auto-generated on first run)
 data/*.json
 
-# Environment
+# Environment & secrets
 .env
-.env.local
+.env.*
+*.pem
+*.key
 
 # IDE
 .idea/
@@ -17,6 +19,7 @@ data/*.json
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Logs
 *.log
@@ -25,7 +28,11 @@ npm-debug.log*
 # Temp
 temp_lexicon_update/
 tmp/
+temp/
 
 # Build
 dist/
 build/
+
+# Test artifacts
+cdp*/
