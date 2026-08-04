@@ -94,12 +94,38 @@ npm start
 
 ## Docker 部署
 
+### 使用 Docker Compose（推荐）
+
 ```bash
-docker-compose up -d
-# 或
-docker build -t dplayer-web-api .
-docker run -d -p 1919:1919 -v ./data:/app/data dplayer-web-api
+git clone https://github.com/yangyang8002/Dplayer-Web-Api.git
+cd Dplayer-Web-Api
+docker compose up -d
 ```
+
+数据持久化在 `./data` 目录，包括弹幕、屏蔽词、账号、配置等。
+
+### 手动构建
+
+```bash
+docker build -t dplayer-web-api .
+docker run -d \
+  --name dplayer-api \
+  -p 1919:1919 \
+  -v ./data:/app/data \
+  dplayer-web-api
+```
+
+### 使用 GitHub 镜像
+
+```bash
+docker run -d \
+  --name dplayer-api \
+  -p 1919:1919 \
+  -v ./data:/app/data \
+  ghcr.io/yangyang8002/dplayer-web-api:latest
+```
+
+> 基础镜像 `node:22-alpine`，内置 git（用于敏感词库自动更新）。
 
 ## API 接口
 
