@@ -8,7 +8,9 @@ COPY package*.json ./
 RUN npm install --production
 
 COPY server.js ./
+COPY gen_perf_danmu.js ./
 COPY public ./public/
+COPY theme ./theme/
 
 RUN mkdir -p data
 

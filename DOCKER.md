@@ -96,7 +96,7 @@ wget -q --spider http://localhost:1919/api/config/public
 | 标签 | 说明 |
 |------|------|
 | `latest` | 最新稳定版本 |
-| `v1.1.0` | 版本锁定 |
+| `v26.8.1` | 版本锁定 |
 
 ---
 
@@ -158,11 +158,11 @@ echo $GITHUB_TOKEN | docker login ghcr.io -u yangyang8002 --password-stdin
 
 # 构建 + 标记
 docker build -t ghcr.io/yangyang8002/dplayer-web-api:latest .
-docker tag ghcr.io/yangyang8002/dplayer-web-api:latest ghcr.io/yangyang8002/dplayer-web-api:v1.1.0
+docker tag ghcr.io/yangyang8002/dplayer-web-api:latest ghcr.io/yangyang8002/dplayer-web-api:v26.8.1
 
 # 推送
 docker push ghcr.io/yangyang8002/dplayer-web-api:latest
-docker push ghcr.io/yangyang8002/dplayer-web-api:v1.1.0
+docker push ghcr.io/yangyang8002/dplayer-web-api:v26.8.1
 ```
 
 ### GitHub Actions 自动发布

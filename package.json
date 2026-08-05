@@ -1,18 +1,20 @@
 {
   "name": "Dplayer-Web-Api",
-  "version": "1.1.0",
-  "description": "DPlayer danmaku video player with web admin panel - PoW firewall, rate limiting, multi-theme, subtitle support",
+  "version": "26.8.1",
+  "description": "DPlayer danmaku video player with web admin panel - PoW firewall, rate limiting, API control & stats, file manager, multi-theme, subtitle support",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
-  "keywords": ["dplayer", "danmaku", "video", "player", "express", "admin"],
+  "keywords": ["dplayer", "danmaku", "video", "player", "express", "admin", "api-stats", "file-manager"],
   "author": "yangyang8002",
   "license": "MIT",
   "type": "commonjs",
   "dependencies": {
+    "7zip-bin": "^5.2.0",
     "express": "^5.2.1",
-    "express-rate-limit": "^8.6.1",
-    "helmet": "^8.3.0"
+    "express-rate-limit": "^8.6.2",
+    "helmet": "^8.3.0",
+    "multer": "^2.2.0"
   }
 }
